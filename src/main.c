@@ -28,7 +28,7 @@ Result: An optimal weight of the GGMST tree with the same structure as T
 typedef struct{
     int x_pos;
     int y_pos;
-    int weight;
+    double weight;
     int visited;
     int is_root_node;
 }Node; //defining a struct for nodes in a cell
@@ -50,7 +50,7 @@ Cells tree_t[] = { //initializing a tree with 4 cells that each contain varying 
     {.number_of_nodes = 2, .row_number = 1, .column_number = 2, .cell_nodes = {{5,2}, {4,0}} },
     {.number_of_nodes = 2, .row_number = 2, .column_number = 0, .cell_nodes = {{9,4}, {3,5}} },
     {.number_of_nodes = 3, .row_number = 2, .column_number = 1, .cell_nodes = {{2,2}, {0,0}, {8,3}} },
-    {.number_of_nodes = 2, .row_number = 2, .column_number = 3, .cell_nodes = {{1,6}} }
+    {.number_of_nodes = 2, .row_number = 2, .column_number = 2, .cell_nodes = {{1,6}} }
 };  
 
 /*
@@ -60,14 +60,16 @@ tree_t current structure is like this:
 1 x x x
 0 x x x
 
-
 Or where E is an empty cell and N has a node
 
 2 N N N
 1 E N N
 0 N N E
-
 */
+
+const unsigned int NUMBER_OF_CELLS_IN_TREE = sizeof(tree_t) / sizeof(tree_t[0]); 
+unsigned int MAX_ROW_NUMBER;
+unsigned int MAX_COL_NUMBER;
 
 //helper function checks if input cell has at least one node
 int check_number_of_nodes_in_cell(int selected_cell){
@@ -84,16 +86,15 @@ int check_number_of_nodes_in_cell(int selected_cell){
 //function to scan a valid root cell index in tree_t
 int pick_root_cell_of_tree(){
     int input_cell;
-    unsigned int number_of_cells_in_tree = sizeof(tree_t) / sizeof(tree_t[0]); 
     short cell_exists_in_array = 0;
     short cell_not_empty = 0;
 
-    printf("Pick a number greater than or equal to 0 and less than or equal to: %d to pick a cell as the root: \n", number_of_cells_in_tree - 1);
+    printf("Pick a number greater than or equal to 0 and less than or equal to: %d to pick a cell as the root: \n", NUMBER_OF_CELLS_IN_TREE - 1);
     scanf("%d", &input_cell);
     while(1){
         cell_exists_in_array, cell_not_empty = 0; //reset flags to 0 before next check
 
-        if(input_cell >= 0 && input_cell <= number_of_cells_in_tree - 1){ //check input is in the range of cells
+        if(input_cell >= 0 && input_cell <= NUMBER_OF_CELLS_IN_TREE - 1){ //check input is in the range of cells
             cell_exists_in_array = 1;
         }
         short check_has_nodes = check_number_of_nodes_in_cell(input_cell); //check input is a non-empty cell
@@ -106,7 +107,7 @@ int pick_root_cell_of_tree(){
             break;
         }
         else{
-            printf("Invalid input, pick a number >= 0 and <= %d, that is a non-empty cell: \n", number_of_cells_in_tree - 1);
+            printf("Invalid input, pick a number >= 0 and <= %d, that is a non-empty cell: \n", NUMBER_OF_CELLS_IN_TREE - 1);
             scanf("%d", &input_cell);
         }
     
@@ -157,8 +158,33 @@ double euclidean_distance(int x1, int y1, int x2, int y2){
     return sqrt(pow((x2 - x1), 2) + pow((y2 - y1), 2));
 }
 
-int compute_euclidean_distance_of_adjacent_cells(int current_node){
-    //take current node and iterate over all adjacent cells so if current cell in 1,1 we look at all nodes in 1,2 | 1,0 | 2,1 | 0,1 or x,y+1 | x,y-1 | x+1,y | x-1,y
+//function takes pointers to a cell and a node along with the index to the cell in tree_t. finds the cells adjacent to the given cell and iterates over nodes each cell to find the minimum euclidean distance to our node. returns the minimum weight.
+double compute_euclidean_distance_of_adjacent_cells_for_given_node(Cells *start_cell, Node *node, int current_cell_index){
+    Node current_node = *node; 
+    Cells current_cell = *start_cell; //deref pointers
+
+    //if current cell is 1,1 we look at all nodes in cells 1,2 | 1,0 | 2,1 | 0,1 or x,y+1 | x,y-1 | x+1,y | x-1,y
+    int adjacent_cells[4][2] = {{current_cell.column_number, current_cell.row_number + 1}, {current_cell.column_number, current_cell.row_number - 1}, {current_cell.column_number+1, current_cell.row_number}, {current_cell.column_number-1, current_cell.row_number}};
+    int cell_indicies[4] = {current_cell_index + MAX_ROW_NUMBER, current_cell_index - MAX_ROW_NUMBER, current_cell_index + 1, current_cell_index - 1};
+    double current_minimum_value = INFINITY;
+
+    //printf("Current Cell: %d, %d \n", current_cell.column_number, current_cell.row_number);
+    for(int i = 0; i < 4; i++){
+        
+        if((adjacent_cells[i][0] <= MAX_COL_NUMBER && adjacent_cells[i][1] <= MAX_ROW_NUMBER) && tree_t[cell_indicies[i]].cell_nodes > 0){ //check we are not accessing cell out of bounds or an empty cell
+            for(int j = 0; j < sizeof(tree_t[cell_indicies[i]].cell_nodes)/sizeof(tree_t[cell_indicies[i]].cell_nodes[0]); j++){ //iterate over cell nodes
+                double current_euclidean_distance = euclidean_distance(current_node.x_pos, current_node.y_pos, tree_t[cell_indicies[i]].cell_nodes[0].x_pos, tree_t[cell_indicies[i]].cell_nodes[0].y_pos);
+                
+                if(current_euclidean_distance < current_minimum_value){ //check if new min found
+                    current_minimum_value = current_euclidean_distance;
+                }
+            }
+        }
+        printf("Adjacent cells: %d, %d\n", adjacent_cells[i][0], adjacent_cells[i][1]);
+    }
+    int input_node;
+    scanf("%d", &input_node);
+    printf("Running after the scanf");
     //calculate euclidean distance for each, track the smallest value and where it came from
     //return overall smallest weight (do we need the path?)
 }
@@ -168,14 +194,22 @@ void optimal_ggmst_algorithm_two(const int HEIGHT, const int ROOT_ROW){
     int current_tree_level = HEIGHT;
 
     while(current_tree_level >= ROOT_ROW){
-        for(int i = 0; i < (sizeof(tree_t)/sizeof(tree_t[0])); i++){
+        for(int i = 0; i < NUMBER_OF_CELLS_IN_TREE; i++){
             if(tree_t[i].row_number == current_tree_level){
                 for(int j = 0; j < (sizeof(tree_t[i].cell_nodes)/sizeof(tree_t[i].cell_nodes[0])); j++){
-                    //pass current node to helper function to compute minimum euclidean distance to all nodes of adjacent cells.
+                    if(!tree_t[i].cell_nodes[j].visited){
+                        //pass current node to helper function to compute minimum euclidean distance to all nodes of adjacent cells.
+                        double current_node_minimum_euclidean_distance = compute_euclidean_distance_of_adjacent_cells_for_given_node(&tree_t[i], &tree_t[i].cell_nodes[j], i);
+                        //mark node visited
+                        tree_t[i].cell_nodes[j].visited = 1;
+
+                        //compare min weight returned with current minimum for cell.
+                    }
                 }
             }
         }
-        break;
+
+        current_tree_level--;
     }
 
 }
@@ -185,6 +219,8 @@ int main(){
     int root_node = pick_root_node_of_cell(cell_root);
     const int ROOT_ROW_OF_TREE = set_root_row(cell_root);
     const int TREE_HEIGHT = get_height_of_tree();
+    MAX_ROW_NUMBER = tree_t[NUMBER_OF_CELLS_IN_TREE].row_number;
+    MAX_COL_NUMBER = tree_t[NUMBER_OF_CELLS_IN_TREE].column_number;
     printf("The cell root is index: %d. and the root node is at index: %d\n", cell_root, root_node);
 
     optimal_ggmst_algorithm_two(TREE_HEIGHT, ROOT_ROW_OF_TREE);
