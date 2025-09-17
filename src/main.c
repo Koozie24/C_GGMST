@@ -38,6 +38,7 @@ typedef struct{
     int row_number;
     int column_number;
     int is_root_cell;
+    double cell_min_weight;
     Node cell_nodes[5];
 }Cells; //defining a struct for cells that contains an array of nodes, with an arbitrary maximum of 5 nodes per cell
 
@@ -165,28 +166,27 @@ double compute_euclidean_distance_of_adjacent_cells_for_given_node(Cells *start_
 
     //if current cell is 1,1 we look at all nodes in cells 1,2 | 1,0 | 2,1 | 0,1 or x,y+1 | x,y-1 | x+1,y | x-1,y
     int adjacent_cells[4][2] = {{current_cell.column_number, current_cell.row_number + 1}, {current_cell.column_number, current_cell.row_number - 1}, {current_cell.column_number+1, current_cell.row_number}, {current_cell.column_number-1, current_cell.row_number}};
-    int cell_indicies[4] = {current_cell_index + MAX_ROW_NUMBER, current_cell_index - MAX_ROW_NUMBER, current_cell_index + 1, current_cell_index - 1};
+    int adjacent_cell_indicies[4] = {current_cell_index + MAX_ROW_NUMBER, current_cell_index - MAX_ROW_NUMBER, current_cell_index + 1, current_cell_index - 1};
     double current_minimum_value = INFINITY;
 
-    //printf("Current Cell: %d, %d \n", current_cell.column_number, current_cell.row_number);
     for(int i = 0; i < 4; i++){
         
-        if((adjacent_cells[i][0] <= MAX_COL_NUMBER && adjacent_cells[i][1] <= MAX_ROW_NUMBER) && tree_t[cell_indicies[i]].cell_nodes > 0){ //check we are not accessing cell out of bounds or an empty cell
-            for(int j = 0; j < sizeof(tree_t[cell_indicies[i]].cell_nodes)/sizeof(tree_t[cell_indicies[i]].cell_nodes[0]); j++){ //iterate over cell nodes
-                double current_euclidean_distance = euclidean_distance(current_node.x_pos, current_node.y_pos, tree_t[cell_indicies[i]].cell_nodes[0].x_pos, tree_t[cell_indicies[i]].cell_nodes[0].y_pos);
+        if((adjacent_cells[i][0] <= MAX_COL_NUMBER && adjacent_cells[i][1] <= MAX_ROW_NUMBER) && tree_t[adjacent_cell_indicies[i]].cell_nodes > 0){ //check we are not accessing cell out of bounds or an empty cell
+            for(int j = 0; j < sizeof(tree_t[adjacent_cell_indicies[i]].cell_nodes)/sizeof(tree_t[adjacent_cell_indicies[i]].cell_nodes[0]); j++){ //iterate over cell nodes
+                double current_euclidean_distance = euclidean_distance(current_node.x_pos, current_node.y_pos, tree_t[adjacent_cell_indicies[i]].cell_nodes[0].x_pos, tree_t[adjacent_cell_indicies[i]].cell_nodes[0].y_pos);
                 
+                //check for a stored weight in the cell - if it is add to weight of the node ****unsure if this is a correct implementation of the pseudocode*****
+                if(tree_t[adjacent_cell_indicies[i]].cell_min_weight){
+                    current_euclidean_distance += tree_t[adjacent_cell_indicies[i]].cell_min_weight;
+                }
+
                 if(current_euclidean_distance < current_minimum_value){ //check if new min found
                     current_minimum_value = current_euclidean_distance;
                 }
             }
         }
-        printf("Adjacent cells: %d, %d\n", adjacent_cells[i][0], adjacent_cells[i][1]);
     }
-    int input_node;
-    scanf("%d", &input_node);
-    printf("Running after the scanf");
-    //calculate euclidean distance for each, track the smallest value and where it came from
-    //return overall smallest weight (do we need the path?)
+    return current_minimum_value;
 }
 
 //all weights init to 0 at compile time - no need to intialize again
@@ -194,18 +194,25 @@ void optimal_ggmst_algorithm_two(const int HEIGHT, const int ROOT_ROW){
     int current_tree_level = HEIGHT;
 
     while(current_tree_level >= ROOT_ROW){
-        for(int i = 0; i < NUMBER_OF_CELLS_IN_TREE; i++){
+        for(int i = 0; i < NUMBER_OF_CELLS_IN_TREE; i++){ //iterate over cells 
             if(tree_t[i].row_number == current_tree_level){
-                for(int j = 0; j < (sizeof(tree_t[i].cell_nodes)/sizeof(tree_t[i].cell_nodes[0])); j++){
+                double cell_minimium = INFINITY;
+                for(int j = 0; j < (sizeof(tree_t[i].cell_nodes)/sizeof(tree_t[i].cell_nodes[0])); j++){ //iterate over nodes in cell
                     if(!tree_t[i].cell_nodes[j].visited){
                         //pass current node to helper function to compute minimum euclidean distance to all nodes of adjacent cells.
                         double current_node_minimum_euclidean_distance = compute_euclidean_distance_of_adjacent_cells_for_given_node(&tree_t[i], &tree_t[i].cell_nodes[j], i);
                         //mark node visited
                         tree_t[i].cell_nodes[j].visited = 1;
+                        tree_t[i].cell_nodes[j].weight = current_node_minimum_euclidean_distance;
 
                         //compare min weight returned with current minimum for cell.
+                        if(current_node_minimum_euclidean_distance < cell_minimium){
+                            cell_minimium = current_node_minimum_euclidean_distance;
+                        }
                     }
                 }
+                tree_t[i].cell_min_weight = cell_minimium;
+
             }
         }
 
