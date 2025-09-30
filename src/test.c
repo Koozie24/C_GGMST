@@ -105,9 +105,13 @@ void initialize_neighbors(){
         }
            
     }
-    for(int i = 0; i < TOTAL_NEIGHBORS; i++){
-        printf("%d, ", tree_t[0].cell_neighbors[i]);
-    }   //PRINTS EXPECTED RESULT
+    for(int j = 0; j < sizeof(tree_t) / sizeof(tree_t[0]); j++){
+        printf("tree_t[%d]: ", j);
+        for(int i = 0; i < TOTAL_NEIGHBORS; i++){
+            printf("%d, ", tree_t[j].cell_neighbors[i]);
+        }   //PRINTS EXPECTED RESULT
+        printf("\n");
+    }
 }
 
 void BFS(){
