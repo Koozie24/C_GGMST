@@ -56,7 +56,7 @@ Or where E is an empty cell and N has a node
 0 N N E
 */
 
-const unsigned int NUMBER_OF_CELLS_IN_TREE = sizeof(tree_t) / sizeof(tree_t[0]); 
+const unsigned int NUMBER_OF_CELLS_IN_TREE = sizeof(tree_t) / sizeof(tree_t[0]) - 1; 
 unsigned int MAX_ROW_NUMBER;
 unsigned int MAX_COL_NUMBER;
 
@@ -115,8 +115,8 @@ void BFS(){
 }
 
 int main(){
-    MAX_ROW_NUMBER = tree_t[NUMBER_OF_CELLS_IN_TREE - 1].row_number + 1;
-    MAX_COL_NUMBER = tree_t[NUMBER_OF_CELLS_IN_TREE - 1].column_number + 1;
+    MAX_ROW_NUMBER = tree_t[NUMBER_OF_CELLS_IN_TREE].row_number + 1;
+    MAX_COL_NUMBER = tree_t[NUMBER_OF_CELLS_IN_TREE].column_number + 1;
     const int root_cell_index = 1;
     initialize_neighbors();
 
