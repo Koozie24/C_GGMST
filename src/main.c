@@ -33,6 +33,17 @@ typedef struct{
     int is_root_node;
 }Node; //defining a struct for nodes in a cell
 
+typedef struct {
+    Node north;
+    Node northeast;
+    Node east;
+    Node southeast;
+    Node south;
+    Node southwest;
+    Node west;
+    Node northwest;
+
+} Tree;         // Tree structure using compass points
 typedef struct{
     size_t number_of_nodes;
     int row_number;
