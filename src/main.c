@@ -184,7 +184,7 @@ double compute_euclidean_distance_of_adjacent_cells_for_given_node(Cells *start_
         
         if((adjacent_cells[i][0] <= MAX_COL_NUMBER && adjacent_cells[i][1] <= MAX_ROW_NUMBER) && tree_t[adjacent_cell_indicies[i]].cell_nodes > 0){ //check we are not accessing cell out of bounds or an empty cell
             for(int j = 0; j < sizeof(tree_t[adjacent_cell_indicies[i]].cell_nodes)/sizeof(tree_t[adjacent_cell_indicies[i]].cell_nodes[0]); j++){ //iterate over cell nodes
-                double current_euclidean_distance = euclidean_distance(current_node.x_pos, current_node.y_pos, tree_t[adjacent_cell_indicies[i]].cell_nodes[0].x_pos, tree_t[adjacent_cell_indicies[i]].cell_nodes[0].y_pos);
+                double current_euclidean_distance = euclidean_distance(current_node.x_pos, current_node.y_pos, tree_t[adjacent_cell_indicies[i]].cell_nodes[j].x_pos, tree_t[adjacent_cell_indicies[i]].cell_nodes[j].y_pos);
                 
                 //check for a stored weight in the cell - if it is add to weight of the node ****unsure if this is a correct implementation of the pseudocode*****
                 if(tree_t[adjacent_cell_indicies[i]].cell_min_weight){
@@ -239,7 +239,6 @@ int main(){
     const int TREE_HEIGHT = get_height_of_tree();
     MAX_ROW_NUMBER = tree_t[NUMBER_OF_CELLS_IN_TREE].row_number;
     MAX_COL_NUMBER = tree_t[NUMBER_OF_CELLS_IN_TREE].column_number;
-    printf("The cell root is index: %d. and the root node is at index: %d\n", cell_root, root_node);
 
     optimal_ggmst_algorithm_two(TREE_HEIGHT, ROOT_ROW_OF_TREE);
 
