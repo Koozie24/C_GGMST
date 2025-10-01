@@ -94,12 +94,12 @@ void initialize_neighbors(){
         ///iterate over tree_t's total neighbors enum
         for(int j=0; j < TOTAL_NEIGHBORS; j++){
             tree_t[i].cell_neighbors[j] = -1; //set to -1 by default
-
+            
             if(tree_t[adjacent_cell_indicies[j]].number_of_nodes == 0){ //case of empty cell
                 continue;
             }
             //checking if rows and cols are no more than max and that indicies not less than 0
-            if((adjacent_cells[j][0] <= MAX_ROW_NUMBER && adjacent_cells[j][1] <= MAX_COL_NUMBER) && adjacent_cell_indicies[j] >= 0) {
+            if((adjacent_cells[j][0] <= MAX_ROW_NUMBER && adjacent_cells[j][1] <= MAX_COL_NUMBER) && (adjacent_cell_indicies[j] >= 0 && adjacent_cell_indicies[j] <= (sizeof(adjacent_cell_indicies) / adjacent_cell_indicies[0]))) {
                 tree_t[i].cell_neighbors[j] = adjacent_cell_indicies[j];
             }
         }
@@ -109,7 +109,7 @@ void initialize_neighbors(){
         printf("tree_t[%d]: ", j);
         for(int i = 0; i < TOTAL_NEIGHBORS; i++){
             printf("%d, ", tree_t[j].cell_neighbors[i]);
-        }   //PRINTS EXPECTED RESULT
+        }   //PRINTS EXPECTED RESULT FOR j = 0
         printf("\n");
     }
 }
