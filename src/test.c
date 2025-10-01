@@ -59,6 +59,8 @@ Or where E is an empty cell and N has a node
 const unsigned int NUMBER_OF_CELLS_IN_TREE = sizeof(tree_t) / sizeof(tree_t[0]) - 1; 
 unsigned int MAX_ROW_NUMBER;
 unsigned int MAX_COL_NUMBER;
+unsigned int MAX_ROW_INDEX;
+unsigned int MAX_COL_INDEX;
 
 /*Standardization for adjacency table:
 
@@ -85,23 +87,53 @@ R down = i - (row max + 1)
 */
 void initialize_neighbors(){
     //loop through tree_t
-    for(int i=0; i < sizeof(tree_t) / sizeof(tree_t[0]); i++){
+    for(int i=0; i < (sizeof(tree_t) / sizeof(tree_t[0])); i++){
+        
+        int current_row = tree_t[i].row_number;
+        int current_col = tree_t[i].column_number;
+
         //up, down, left, right, left up, left down, right up, right down
         //set row and column numbers of current adjacent neighbors
-        int adjacent_cells[8][2] = {{tree_t[i].row_number+1, tree_t[i].column_number}, {tree_t[i].row_number-1, tree_t[i].column_number}, {tree_t[i].row_number, tree_t[i].column_number-1}, {tree_t[i].row_number, tree_t[i].column_number+1}, {tree_t[i].row_number+1, tree_t[i].column_number-1}, {tree_t[i].row_number-1, tree_t[i].column_number-1}, {tree_t[i].row_number+1, tree_t[i].column_number+1}, {tree_t[i].row_number-1, tree_t[i].column_number+1}};
-        //set indicies of current adjacen neighbors
-        int adjacent_cell_indicies[8] = {i + MAX_ROW_NUMBER, i - MAX_ROW_NUMBER, i - 1, i + 1, i + (MAX_ROW_NUMBER - 1), i - (MAX_ROW_NUMBER - 1), i + (MAX_ROW_NUMBER + 1), i - (MAX_ROW_NUMBER + 1)};
+        int adjacent_cells[8][2] = {
+            {current_row+1, current_col}, //up
+            {current_row-1, current_col}, //down
+            {current_row, current_col-1}, //L
+            {current_row, current_col+1}, //r
+            {current_row+1, current_col-1}, //left up
+            {current_row-1, current_col-1}, //left down
+            {current_row+1, current_col+1}, //right up
+            {current_row-1, current_col+1}}; //right down
+        //set indicies of current adjacen neighbors by adding or subtracting the length of the column to go up or down and 1 from index to go L/R
+        int adjacent_cell_indicies[8] = {
+            i + MAX_COL_NUMBER, 
+            i - MAX_COL_NUMBER, 
+            i - 1, 
+            i + 1, 
+            (i - 1) + MAX_COL_NUMBER, 
+            (i - 1) - MAX_COL_NUMBER, 
+            (i + 1) + MAX_COL_NUMBER, 
+            (i + 1) - MAX_COL_NUMBER};
+
         ///iterate over tree_t's total neighbors enum
         for(int j=0; j < TOTAL_NEIGHBORS; j++){
+            int row = adjacent_cells[j][0];
+            int col = adjacent_cells[j][1];
+            int neighbor_index = adjacent_cell_indicies[j];
+
             tree_t[i].cell_neighbors[j] = -1; //set to -1 by default
             
-            if(tree_t[adjacent_cell_indicies[j]].number_of_nodes == 0){ //case of empty cell
+            if((row < 0 || col < 0) || (row > MAX_ROW_INDEX || col > MAX_COL_INDEX)){ //check if row or col are out of bounds
                 continue;
             }
-            //checking if rows and cols are no more than max and that indicies not less than 0
-            if((adjacent_cells[j][0] <= MAX_ROW_NUMBER && adjacent_cells[j][1] <= MAX_COL_NUMBER) && (adjacent_cell_indicies[j] >= 0 && adjacent_cell_indicies[j] <= (sizeof(adjacent_cell_indicies) / adjacent_cell_indicies[0]))) {
-                tree_t[i].cell_neighbors[j] = adjacent_cell_indicies[j];
+            if(neighbor_index < 0 || neighbor_index > NUMBER_OF_CELLS_IN_TREE + 1){ //check if index is out of bounds
+                continue;
             }
+
+            if(tree_t[i].number_of_nodes == 0 || tree_t[neighbor_index].number_of_nodes == 0){ //case of empty cell
+                continue;
+            }
+      
+            tree_t[i].cell_neighbors[j] = neighbor_index; //set neighbor index in cell neighbors
         }
            
     }
@@ -109,7 +141,7 @@ void initialize_neighbors(){
         printf("tree_t[%d]: ", j);
         for(int i = 0; i < TOTAL_NEIGHBORS; i++){
             printf("%d, ", tree_t[j].cell_neighbors[i]);
-        }   //PRINTS EXPECTED RESULT FOR j = 0
+        }   //PRINTS EXPECTED RESULT FOR all j
         printf("\n");
     }
 }
@@ -119,8 +151,12 @@ void BFS(){
 }
 
 int main(){
-    MAX_ROW_NUMBER = tree_t[NUMBER_OF_CELLS_IN_TREE].row_number + 1;
-    MAX_COL_NUMBER = tree_t[NUMBER_OF_CELLS_IN_TREE].column_number + 1;
+    //max row and col actualy val
+    MAX_ROW_INDEX = tree_t[NUMBER_OF_CELLS_IN_TREE].row_number;
+    MAX_COL_INDEX = tree_t[NUMBER_OF_CELLS_IN_TREE].column_number;
+    //number of rows and cols
+    MAX_COL_NUMBER  = MAX_COL_INDEX + 1;
+    MAX_ROW_NUMBER = MAX_ROW_INDEX + 1;
     const int root_cell_index = 1;
     initialize_neighbors();
 
