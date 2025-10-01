@@ -12,10 +12,6 @@ typedef struct{
         // Tree structure using compass points
 
 enum Neighbors{UP, DOWN, LEFT, RIGHT, LEFT_UP, LEFT_DOWN, RIGHT_UP, RIGHT_DOWN, TOTAL_NEIGHBORS};
-/*
-tydef struct{
-    int up, down, left, right, left_up, left_down, right_up, right_down;
-} Neighbors; //indicies of cell neighbors in tree_t to current cell */
 
 typedef struct{
     size_t number_of_nodes;
@@ -30,7 +26,7 @@ typedef struct{
     int parent_cell_index;
 }Cells; //defining a struct for cells that contains an array of nodes, with an arbitrary maximum of 5 nodes per cell
 
-Cells tree_t[] = { //initializing a tree with 4 cells that each contain varying number of nodes
+Cells graph_g[] = { //initializing a tree with 4 cells that each contain varying number of nodes
     {.number_of_nodes = 3, .row_number = 0, .column_number = 0, .cell_nodes = {{2,3}, {6,1}, {5,2}} }, //pass number of nodes then pass node x/y, weight should default to zero for a global initialized int
     {.number_of_nodes = 2, .row_number = 0, .column_number = 1, .cell_nodes = {{1,1}, {8,5}} },
     {.number_of_nodes = 0, .row_number = 0, .column_number = 2, .cell_nodes = {} }, //empty cell
@@ -43,7 +39,7 @@ Cells tree_t[] = { //initializing a tree with 4 cells that each contain varying 
 };  
 
 /*
-tree_t current structure is like this:
+graph_g current structure is like this:
 
 2 x x x
 1 x x x
@@ -56,7 +52,7 @@ Or where E is an empty cell and N has a node
 0 N N E
 */
 
-const unsigned int NUMBER_OF_CELLS_IN_TREE = sizeof(tree_t) / sizeof(tree_t[0]) - 1; 
+const unsigned int NUMBER_OF_CELLS_IN_TREE = sizeof(graph_g) / sizeof(graph_g[0]) - 1; 
 unsigned int MAX_ROW_NUMBER;
 unsigned int MAX_COL_NUMBER;
 unsigned int MAX_ROW_INDEX;
@@ -85,12 +81,14 @@ L right =  i - (row max -1)
 R up = i + (row max + 1)
 R down = i - (row max + 1)
 */
-void initialize_neighbors(){
-    //loop through tree_t
-    for(int i=0; i < (sizeof(tree_t) / sizeof(tree_t[0])); i++){
+void find_neighbors(){
+    //loop through graph_g
+    for(int i=0; i < (sizeof(graph_g) / sizeof(graph_g[0])); i++){
         
-        int current_row = tree_t[i].row_number;
-        int current_col = tree_t[i].column_number;
+        int current_row = graph_g[i].row_number;
+        int current_col = graph_g[i].column_number;
+
+        graph_g[i].parent_cell_index = -1; //go ahead and init to -1
 
         //up, down, left, right, left up, left down, right up, right down
         //set row and column numbers of current adjacent neighbors
@@ -114,13 +112,13 @@ void initialize_neighbors(){
             (i + 1) + MAX_COL_NUMBER, 
             (i + 1) - MAX_COL_NUMBER};
 
-        ///iterate over tree_t's total neighbors enum
+        ///iterate over graph_g's total neighbors enum
         for(int j=0; j < TOTAL_NEIGHBORS; j++){
             int row = adjacent_cells[j][0];
             int col = adjacent_cells[j][1];
             int neighbor_index = adjacent_cell_indicies[j];
 
-            tree_t[i].cell_neighbors[j] = -1; //set to -1 by default
+            graph_g[i].cell_neighbors[j] = -1; //set to -1 by default
             
             if((row < 0 || col < 0) || (row > MAX_ROW_INDEX || col > MAX_COL_INDEX)){ //check if row or col are out of bounds
                 continue;
@@ -129,38 +127,74 @@ void initialize_neighbors(){
                 continue;
             }
 
-            if(tree_t[i].number_of_nodes == 0 || tree_t[neighbor_index].number_of_nodes == 0){ //case of empty cell
+            if(graph_g[i].number_of_nodes == 0 || graph_g[neighbor_index].number_of_nodes == 0){ //case of empty cell
                 continue;
             }
       
-            tree_t[i].cell_neighbors[j] = neighbor_index; //set neighbor index in cell neighbors
+            graph_g[i].cell_neighbors[j] = neighbor_index; //set neighbor index in cell neighbors
         }
            
     }
-    for(int j = 0; j < sizeof(tree_t) / sizeof(tree_t[0]); j++){
-        printf("tree_t[%d]: ", j);
+    for(int j = 0; j < sizeof(graph_g) / sizeof(graph_g[0]); j++){
+        printf("graph_g[%d]: ", j);
         for(int i = 0; i < TOTAL_NEIGHBORS; i++){
-            printf("%d, ", tree_t[j].cell_neighbors[i]);
+            if(graph_g[j].cell_neighbors[i] != -1){            
+                printf("%d, ", graph_g[j].cell_neighbors[i]);
+            }
         }   //PRINTS EXPECTED RESULT FOR all j
         printf("\n");
     }
 }
 
-void BFS(){
+void print_tree(int cell_index, int depth) {
+  if (cell_index == -1 || graph_g[cell_index].visited) return;
 
+  graph_g[cell_index].visited = 1;
+
+  // use indentition based on depth
+  for (int i = 0; i < depth; i++) printf("  ");
+  printf("└── Cell [%d,%d] (Index %d, Nodes: %zu)\n",
+	graph_g[cell_index].row_number,
+        graph_g[cell_index].column_number,
+        cell_index,
+	graph_g[cell_index].number_of_nodes);
+  // Recursively print each neighbor
+  for (int i = 0; i < TOTAL_NEIGHBORS; i++) {
+    int neighbor_index = graph_g[cell_index].cell_neighbors[i];
+    if (neighbor_index != -1 && !graph_g[neighbor_index].visited) {
+      print_tree(neighbor_index, depth+1);
+    }
+  }
+}
+
+void reset_visited_flag() {
+  for (int i=0; i <= NUMBER_OF_CELLS_IN_TREE; i++) {
+    graph_g[i].visited = 0;
+  }
+}
+
+void DFS(int cell){
+    //start at root and mark visited
+    //For each unvisited neighbor of current node recursively call DFS
+    //When a current node has no unvisited neighbors, backtrack to previous node and check for unvisited neighbors
+    //base case no neighbors to root. return tree of single cell (root)
+    
+    graph_g[cell].visited = 1;
+    
 }
 
 int main(){
     //max row and col actualy val
-    MAX_ROW_INDEX = tree_t[NUMBER_OF_CELLS_IN_TREE].row_number;
-    MAX_COL_INDEX = tree_t[NUMBER_OF_CELLS_IN_TREE].column_number;
+    MAX_ROW_INDEX = graph_g[NUMBER_OF_CELLS_IN_TREE].row_number;
+    MAX_COL_INDEX = graph_g[NUMBER_OF_CELLS_IN_TREE].column_number;
     //number of rows and cols
     MAX_COL_NUMBER  = MAX_COL_INDEX + 1;
     MAX_ROW_NUMBER = MAX_ROW_INDEX + 1;
     const int root_cell_index = 1;
-    initialize_neighbors();
+    find_neighbors();
+    reset_visited_flag();
 
-
+    DFS(root_cell_index);
 
 
     return 0;
