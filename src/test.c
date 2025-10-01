@@ -87,3 +87,32 @@ double compute_euclidean_distance_of_adjacent_cells_for_given_node(Cells *start_
     }
     return current_minimum_value;
 }
+
+
+void print_tree(int cell_index, int depth) {
+  if (cell_index == -1 || tree_t[cell_index].visited) return;
+
+  tree_t[cell_index].visited = 1;
+  // for (i=0; i< tree_t[cell_index].number_of_nodes; i++)
+///    printf("%d , %d ", tree_t[cell_index].cell_nodes[i][0],tree_t[cell_index].cell_nodes[i][1]);
+  // use indentition based on depth
+  for (int i = 0; i < depth; i++) printf("  ");
+  printf("└── Cell [%d,%d] (Index %d, Nodes: %zu)\n",
+	tree_t[cell_index].row_number,
+        tree_t[cell_index].column_number,
+        cell_index,
+	tree_t[cell_index].number_of_nodes);
+  // Recursively print each neighbor
+  for (int i = 0; i < TOTAL_NEIGHBORS; i++) {
+    int neighbor_index = tree_t[cell_index].cell_neighbors[i];
+    if (neighbor_index != -1 && !tree_t[neighbor_index].visited) {
+      print_tree(neighbor_index, depth+1);
+	  // how do I print all the points inside this cell? 
+		// for each point "i" inside compute tree_t[cell_index] we want to compute weight which is tree_t[cell_index].cell_nodes[i].weight
+		// for (i=0; i< tree_t[cell_index].number_of_nodes; i++)
+		//  {
+		     // tree_t[cell_index].cell_nodes[i].weight
+		//  }
+    }
+  }
+}
