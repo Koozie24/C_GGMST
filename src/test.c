@@ -58,7 +58,7 @@ unsigned int MAX_COL_NUMBER;
 unsigned int MAX_ROW_INDEX;
 unsigned int MAX_COL_INDEX;
 
-//function takes pointers to a cell and a node along with the index to the cell in tree_t. finds the cells adjacent to the given cell and iterates over nodes each cell to find the minimum euclidean distance to our node. returns the minimum weight.
+//function takes pointers to a cell and a node along with the index to the cell in graph_g. finds the cells adjacent to the given cell and iterates over nodes each cell to find the minimum euclidean distance to our node. returns the minimum weight.
 double compute_euclidean_distance_of_adjacent_cells_for_given_node(Cells *start_cell, Node *node, int current_cell_index){
     Node current_node = *node; 
     Cells current_cell = *start_cell; //deref pointers
@@ -70,13 +70,13 @@ double compute_euclidean_distance_of_adjacent_cells_for_given_node(Cells *start_
 
     for(int i = 0; i < 4; i++){
         
-        if((adjacent_cells[i][0] <= MAX_COL_NUMBER && adjacent_cells[i][1] <= MAX_ROW_NUMBER) && tree_t[adjacent_cell_indicies[i]].cell_nodes > 0){ //check we are not accessing cell out of bounds or an empty cell
-            for(int j = 0; j < sizeof(tree_t[adjacent_cell_indicies[i]].cell_nodes)/sizeof(tree_t[adjacent_cell_indicies[i]].cell_nodes[0]); j++){ //iterate over cell nodes
-                double current_euclidean_distance = euclidean_distance(current_node.x_pos, current_node.y_pos, tree_t[adjacent_cell_indicies[i]].cell_nodes[j].x_pos, tree_t[adjacent_cell_indicies[i]].cell_nodes[j].y_pos);
+        if((adjacent_cells[i][0] <= MAX_COL_NUMBER && adjacent_cells[i][1] <= MAX_ROW_NUMBER) && graph_g[adjacent_cell_indicies[i]].cell_nodes > 0){ //check we are not accessing cell out of bounds or an empty cell
+            for(int j = 0; j < sizeof(graph_g[adjacent_cell_indicies[i]].cell_nodes)/sizeof(graph_g[adjacent_cell_indicies[i]].cell_nodes[0]); j++){ //iterate over cell nodes
+                double current_euclidean_distance = euclidean_distance(current_node.x_pos, current_node.y_pos, graph_g[adjacent_cell_indicies[i]].cell_nodes[j].x_pos, graph_g[adjacent_cell_indicies[i]].cell_nodes[j].y_pos);
                 
                 //check for a stored weight in the cell - if it is add to weight of the node ****unsure if this is a correct implementation of the pseudocode*****
-                if(tree_t[adjacent_cell_indicies[i]].cell_min_weight){
-                    current_euclidean_distance += tree_t[adjacent_cell_indicies[i]].cell_min_weight;
+                if(graph_g[adjacent_cell_indicies[i]].cell_min_weight){
+                    current_euclidean_distance += graph_g[adjacent_cell_indicies[i]].cell_min_weight;
                 }
 
                 if(current_euclidean_distance < current_minimum_value){ //check if new min found
@@ -90,28 +90,28 @@ double compute_euclidean_distance_of_adjacent_cells_for_given_node(Cells *start_
 
 
 void print_tree(int cell_index, int depth) {
-  if (cell_index == -1 || tree_t[cell_index].visited) return;
+  if (cell_index == -1 || graph_g[cell_index].visited) return;
 
-  tree_t[cell_index].visited = 1;
-  // for (i=0; i< tree_t[cell_index].number_of_nodes; i++)
-///    printf("%d , %d ", tree_t[cell_index].cell_nodes[i][0],tree_t[cell_index].cell_nodes[i][1]);
+  graph_g[cell_index].visited = 1;
+  // for (i=0; i< graph_g[cell_index].number_of_nodes; i++)
+///    printf("%d , %d ", graph_g[cell_index].cell_nodes[i][0],graph_g[cell_index].cell_nodes[i][1]);
   // use indentition based on depth
   for (int i = 0; i < depth; i++) printf("  ");
   printf("└── Cell [%d,%d] (Index %d, Nodes: %zu)\n",
-	tree_t[cell_index].row_number,
-        tree_t[cell_index].column_number,
+	graph_g[cell_index].row_number,
+        graph_g[cell_index].column_number,
         cell_index,
-	tree_t[cell_index].number_of_nodes);
+	graph_g[cell_index].number_of_nodes);
   // Recursively print each neighbor
   for (int i = 0; i < TOTAL_NEIGHBORS; i++) {
-    int neighbor_index = tree_t[cell_index].cell_neighbors[i];
-    if (neighbor_index != -1 && !tree_t[neighbor_index].visited) {
+    int neighbor_index = graph_g[cell_index].cell_neighbors[i];
+    if (neighbor_index != -1 && !graph_g[neighbor_index].visited) {
       print_tree(neighbor_index, depth+1);
 	  // how do I print all the points inside this cell? 
-		// for each point "i" inside compute tree_t[cell_index] we want to compute weight which is tree_t[cell_index].cell_nodes[i].weight
-		// for (i=0; i< tree_t[cell_index].number_of_nodes; i++)
+		// for each point "i" inside compute graph_g[cell_index] we want to compute weight which is graph_g[cell_index].cell_nodes[i].weight
+		// for (i=0; i< graph_g[cell_index].number_of_nodes; i++)
 		//  {
-		     // tree_t[cell_index].cell_nodes[i].weight
+		     // graph_g[cell_index].cell_nodes[i].weight
 		//  }
     }
   }
