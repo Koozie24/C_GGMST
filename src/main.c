@@ -233,9 +233,21 @@ double euclidean_distance(int x1, int y1, int x2, int y2){
     return sqrt(pow((x2 - x1), 2) + pow((y2 - y1), 2));
 }
 
-double compute_euclidean_distance_of_adjacent_cells_for_given_node(Node *current_cell_node, int current_cell){
+double compute_euclidean_distance_of_adjacent_cells_for_given_node(Node *current_cell_node, int current_cell_index){
 
     double current_minimum_for_node = INFINITY;
+
+    Cells current_cell = graph_g[current_cell_index];
+    int number_of_neighbors = sizeof(current_cell.cell_neighbors) / sizeof(current_cell.cell_neighbors[0]);
+
+    for(int i=0; i < number_of_neighbors; i++){
+
+        Cells current_neighbor_to_cell = graph_g[current_cell.cell_neighbors[i]]; //get the cell of current neighbor by accessing index in cell neighbors
+
+        for(int j=0; j < current_neighbor_to_cell.number_of_nodes; j++){
+            double distance_to_current_neighbor_node = euclidean_distance(current_cell_node->x_pos, current_cell_node->y_pos, current_neighbor_to_cell.cell_nodes[j].x_pos, current_neighbor_to_cell.cell_nodes[j].y_pos);
+        }
+    }
 }
 
 void print_tree(int cell_index, int depth) {
