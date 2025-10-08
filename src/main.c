@@ -233,10 +233,19 @@ double euclidean_distance(int x1, int y1, int x2, int y2){
     return sqrt(pow((x2 - x1), 2) + pow((y2 - y1), 2));
 }
 
+double compute_euclidean_distance_of_adjacent_cells_for_given_node(Node *current_cell_node, int current_cell){
+
+    double current_minimum_for_node = INFINITY;
+}
+
 void print_tree(int cell_index, int depth) {
   if (cell_index == -1 || graph_g[cell_index].visited) return;
 
   graph_g[cell_index].visited = 1;
+
+  for(int i = 0; i < graph_g[cell_index].number_of_nodes; i++){
+    printf("%d, %d\n", graph_g[cell_index].cell_nodes[i].x_pos, graph_g[cell_index].cell_nodes[i].y_pos);
+  }
 
   // use indentition based on depth
   for (int i = 0; i < depth; i++) printf("  ");
@@ -250,6 +259,27 @@ void print_tree(int cell_index, int depth) {
     int neighbor_index = graph_g[cell_index].cell_neighbors[i];
     if (neighbor_index != -1 && !graph_g[neighbor_index].visited) {
       print_tree(neighbor_index, depth+1);
+
+      //loop over all nodes in cell
+      double minimum = INFINITY;
+      int minimum_node_index = 0;
+      for(int j=0; j < graph_g[cell_index].number_of_nodes; j++){
+        Node current_cell_node = graph_g[cell_index].cell_nodes[j];
+        
+        //for each node get min euclidean distance to all neighbor cells' nodes
+        double current_node_weight = compute_euclidean_distance_of_adjacent_cells_for_given_node(&current_cell_node, cell_index);
+
+        if(current_node_weight < minimum){
+            minimum = current_node_weight;
+            minimum_node_index = j;
+        }
+
+
+
+      }
+
+      //set the weight of the minimum weight node
+      graph_g[cell_index].cell_nodes[minimum_node_index].weight = minimum;
     }
   }
 }
@@ -259,16 +289,6 @@ void reset_visited_flag() {
     graph_g[i].visited = 0;
   }
 }
-
-//void DFS(int cell){
-    //start at root and mark visited
-    //For each unvisited neighbor of current node recursively call DFS
-    //When a current node has no unvisited neighbors, backtrack to previous node and check for unvisited neighbors
-    //base case no neighbors to root. return tree of single cell (root)
-    
-    //graph_g[cell].visited = 1;
-    
-//}
 
 int main(){
     //max row and col actualy val
