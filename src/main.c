@@ -9,18 +9,14 @@ typedef struct{
     double weight;
     int visited;
     int is_root_point;
-}point; //defining a struct for points in a node
-        // Tree structure using compass points
+}Point; //defining a struct for points in a node
 
-
-//----------------------------------------------------------------------------------------------
-//
-// I am leaving this untouched for now.
-//
-//-----------------------------------------------------------------------------------------------
 enum Neighbors{UP, DOWN, LEFT, RIGHT, LEFT_UP, LEFT_DOWN, RIGHT_UP, RIGHT_DOWN, TOTAL_NEIGHBORS};
 
-
+typedef struct{
+    int child_index; //index of child on edge or -1 if none
+    double weight; //weight of the edge
+}Edges;
 
 typedef struct{
     size_t number_of_points;
@@ -28,23 +24,27 @@ typedef struct{
     int column_number;
     int is_root_node;
     double node_min_weight;
-    point node_points[5];
+    Point node_points[5];
     int visited;
     int is_leaf;
     int node_neighbors[TOTAL_NEIGHBORS];
     int parent_node_index;
-}nodes; //defining a struct for nodes that contains an array of points, with an arbitrary maximum of 5 points per node
+    Edges set_of_edges[8];
+}Nodes; //defining a struct for Nodes that contains an array of points, with an arbitrary maximum of 5 points per node
 
-
+ /*
+########################################################
+######### CURRENTLY UNUSED STRUCTS ###################
+########################################################
 typedef struct  {
-    nodes north;
-    nodes nothEast;
-    nodes east;
-    nodes southEast;
-    nodes south;
-    nodes southWest;
-    nodes west;
-    nodes northWest;
+    Nodes north;
+    Nodes nothEast;
+    Nodes east;
+    Nodes southEast;
+    Nodes south;
+    Nodes southWest;
+    Nodes west;
+    Nodes northWest;
     bool isRootNode;
 } Tree;         // The tree structure based on compass points
 
@@ -52,17 +52,19 @@ typedef struct  {
 //--------------------------------------------------------------
 //
 // This is a doubly linked list vhat we can used to keep track
-// of nodes we visited. May replace with a hash table depending
+// of Nodes we visited. May replace with a hash table depending
 // on what Dr. Raifey recommends.
 // 
 //--------------------------------------------------------------
 typedef struct {
-    nodes previous;
-    nodes bext;
+    Nodes previous;
+    Nodes bext;
     float distance_from_prev;
 } visitedNodes;
 
-nodes graph_g[] = { //initializing a tree with 4 nodes that each contain varying number of points
+*/
+
+Nodes graph_g[] = { //initializing a tree with 4 nodes that each contain varying number of points
     {.number_of_points = 3, .row_number = 0, .column_number = 0, .node_points = {{2,3}, {6,1}, {5,2}} }, //pass number of points then pass point x/y, weight should default to zero for a global initialized int
     {.number_of_points = 2, .row_number = 0, .column_number = 1, .node_points = {{1,1}, {8,5}} },
     {.number_of_points = 0, .row_number = 0, .column_number = 2, .node_points = {} }, //empty node
@@ -179,9 +181,14 @@ void find_neighbors(){
                 printf("%d, ", graph_g[j].node_neighbors[i]);
             }
         }   //PRINTS EXPECTED RESULT FOR all j
-        printf("\n");
+        printf("\n\n");
     }
 }
+
+/*
+########################################################
+######### CURRENTLY UNUSED FUNCTIONS ###################
+########################################################
 
 //helper function checks if input node has at least one point
 int check_number_of_points_in_node(int selected_node){
@@ -254,9 +261,10 @@ int pick_root_point_of_node(int node_index){
 }
 
 //helper function get the row value of the root of the tree based on given input
-int set_root_row(int root_cel_index){
-    return graph_g[root_cel_index].row_number;
+int set_root_row(int root_node_index){
+    return graph_g[root_node_index].row_number;
 }
+
 
 //helper function to get the height of the current tree by taking the row number of the last element in graph_g
 int get_height_of_tree(){
@@ -265,69 +273,130 @@ int get_height_of_tree(){
     return graph_g[last_element_graph_g].row_number;
 }
 
+struct Min_Result{ //define a struct to return values from computation function
+    double euclidean_distance;
+    int node_index;
+    int point_index;
+};
+
+//Fnction takes a pointer to a point in a node and the index of a node in our graph. Finds the minimum euclidean distance (weight) between the 
+//given point and every point of each neighbor of the node. Returns a struct with the smalled euclidean distance, index of the neighbor node and index of the point in the neighbor
+struct Min_Result compute_euclidean_distance_of_adjacent_nodes_for_given_point(Point *current_node_point, int current_node_index){
+
+    double current_minimum_for_point = INFINITY; //set temp var to infinity
+    int node_min_point_belongs, point_in_node = -2;
+
+    for(int i=0; i < TOTAL_NEIGHBORS; i++){ //loop from 0 to neighbors n-1
+
+        int current_neighbor_to_node = graph_g[current_node_index].node_neighbors[i]; //get the node of current neighbor by accessing index in node neighbors
+
+        for(int j=0; j < graph_g[current_neighbor_to_node].number_of_points; j++){ //loop through each point in curent node
+            double distance_to_current_neighbor_point = euclidean_distance(current_node_point->x_pos, current_node_point->y_pos, graph_g[current_neighbor_to_node].node_points[j].x_pos, graph_g[current_neighbor_to_node].node_points[j].y_pos); //distance of current node's point passed in func to current point in current neighbor node
+            
+            if(distance_to_current_neighbor_point < current_minimum_for_point){
+                current_minimum_for_point = distance_to_current_neighbor_point;
+                node_min_point_belongs = i; //store the index of neighbor that minimum point belongs to
+                point_in_node = j; //store index of minimum point
+            }
+        }
+    }
+
+    struct Min_Result min_of_node; //init and set return struct
+    min_of_node.euclidean_distance = current_minimum_for_point;
+    min_of_node.node_index = node_min_point_belongs;
+    min_of_node.point_index = point_in_node;
+
+    return min_of_node;
+
+}
+    
+*/
+
 double euclidean_distance(int x1, int y1, int x2, int y2){
     return sqrt(pow((x2 - x1), 2) + pow((y2 - y1), 2));
 }
 
-double compute_euclidean_distance_of_adjacent_nodes_for_given_point(point *current_node_point, int current_node_index){
+/*function takes an index of a parent and child node.  iterates over each point in both nodes and computes euclidean distance. Returns a double of the smallest value*/
+double compute_edge_weight_between_nodes(int parent, int child){
+    double lowest = INFINITY; //init lowest value to infiinity
 
-    double current_minimum_for_point = INFINITY;
+    for(int i=0; i < graph_g[parent].number_of_points; i++){ //loop through all of parents points
+        for(int j=0; j < graph_g[child].number_of_points; j++){//for each parent point loop through each child point
+            double computed_euclidean_distance = euclidean_distance(graph_g[parent].node_points[j].x_pos, graph_g[parent].node_points[j].y_pos, graph_g[child].node_points[j].x_pos, graph_g[child].node_points[j].y_pos); //pass in xy of current parent point and xy of current child point
+            if(computed_euclidean_distance < lowest) lowest = computed_euclidean_distance;
+        }
+    }
 
-    nodes current_node = graph_g[current_node_index];
-    int number_of_neighbors = sizeof(current_node.node_neighbors) / sizeof(current_node.node_neighbors[0]);
+    return lowest;
+}
 
-    for(int i=0; i < number_of_neighbors; i++){
+/*function initializes the parent index values of each node to -2, this will later be set to -1 for root or 0...n nodes for all not root nodes*/
+void initialize_parent_node_indicies(){
+    for(int i=0; i < sizeof(graph_g)/sizeof(graph_g[0]); i++){
+        graph_g[i].parent_node_index = -2; //initialzie the index to less than zero and not -1 - this is root node.
+    }
+}
 
-        nodes current_neighbor_to_node = graph_g[current_node.node_neighbors[i]]; //get the node of current neighbor by accessing index in node neighbors
+/*function takes the integer index of a node and checks all of its neighbors for any unvisited. If no unvisited, marks the node as a leaf*/
+void check_is_leaf_node(int node_index){
+    int num_unvisited_neighbors = 0;
+    for(int k=0; k < TOTAL_NEIGHBORS; k++){
+        int this_neighbor = graph_g[node_index].node_neighbors[k];
+        if(!graph_g[this_neighbor].visited && this_neighbor >= 0){
+            num_unvisited_neighbors++;
+            //printf("%d : unvisited ", this_neighbor);
+        }
+    }
 
-        for(int j=0; j < current_neighbor_to_node.number_of_points; j++){
-            double distance_to_current_neighbor_point = euclidean_distance(current_node_point->x_pos, current_node_point->y_pos, current_neighbor_to_node.node_points[j].x_pos, current_neighbor_to_node.node_points[j].y_pos);
+    if(num_unvisited_neighbors == 0){
+        graph_g[node_index].is_leaf = 1;
+        //printf("%d, I am a leaf!", node_index);
+    }
+}
+
+/*function takes an index for a parent node and child node. Loops through the neighbors of the parent until it finds the k postion (up/down/L/R/etc)
+of the child and then maps the edge*/
+void map_edges_between_nodes(int child_index, int parent_index){
+   
+    if(parent_index < 0 || child_index < 0) return;
+     
+    double current_edge_weight = compute_edge_weight_between_nodes(parent_index, child_index);
+    for (int k=0; k < TOTAL_NEIGHBORS; k++){
+        if(graph_g[parent_index].node_neighbors[k] == child_index){
+            graph_g[parent_index].set_of_edges[k].child_index = child_index; //define the edge between parent and child
+            graph_g[parent_index].set_of_edges[k].weight = current_edge_weight; //set the weight of the edge
+            return;
         }
     }
 }
 
-void print_tree(int node_index, int depth) {
+
+void tree_dfs(int node_index, int depth, int parent_index) {
+
   if (node_index == -1 || graph_g[node_index].visited) return;
 
+  check_is_leaf_node(node_index);
+  //if(parent_index > -1) map_edges_between_nodes(node_index, parent_index); //map edges and set weights if not root node
+
   graph_g[node_index].visited = 1;
+  graph_g[node_index].parent_node_index = parent_index; //set parent to index of previous node
 
-  for(int i = 0; i < graph_g[node_index].number_of_points; i++){
-    printf("%d, %d\n", graph_g[node_index].node_points[i].x_pos, graph_g[node_index].node_points[i].y_pos);
-  }
-
-  // use indentition based on depth
+  /*use indentition based on depth
   for (int i = 0; i < depth; i++) printf("  ");
+  printf("%d: depth ", depth);
   printf("└── node [%d,%d] (Index %d, points: %zu)\n",
-	graph_g[node_index].row_number,
+    graph_g[node_index].row_number,
         graph_g[node_index].column_number,
         node_index,
-	graph_g[node_index].number_of_points);
-  // Recursively print each neighbor
+    graph_g[node_index].number_of_points);
+   Recursively print each neighbor */
   for (int i = 0; i < TOTAL_NEIGHBORS; i++) {
     int neighbor_index = graph_g[node_index].node_neighbors[i];
+
     if (neighbor_index != -1 && !graph_g[neighbor_index].visited) {
-      print_tree(neighbor_index, depth+1);
-
-      //loop over all points in node
-      double minimum = INFINITY;
-      int minimum_point_index = 0;
-      for(int j=0; j < graph_g[node_index].number_of_points; j++){
-        point current_node_point = graph_g[node_index].node_points[j];
-        
-        //for each point get min euclidean distance to all neighbor nodes' points
-        double current_point_weight = compute_euclidean_distance_of_adjacent_nodes_for_given_point(&current_node_point, node_index);
-
-        if(current_point_weight < minimum){
-            minimum = current_point_weight;
-            minimum_point_index = j;
-        }
-
-
-
-      }
-
-      //set the weight of the minimum weight point
-      graph_g[node_index].node_points[minimum_point_index].weight = minimum;
+        map_edges_between_nodes(neighbor_index, node_index); //map edge and set weight from parent (node) to child(parent)
+        printf("Edge: parent %d -> child %d | edge weight = %.3f\n", node_index, neighbor_index, graph_g[node_index].set_of_edges[i].weight);
+        tree_dfs(neighbor_index, depth+1, node_index);
     }
   }
 }
@@ -346,13 +415,16 @@ int main(){
     MAX_COL_NUMBER  = MAX_COL_INDEX + 1;
     MAX_ROW_NUMBER = MAX_ROW_INDEX + 1;
     const int root_node_index = 1;
+    graph_g[root_node_index].is_root_node = 1;
+    graph_g[root_node_index].parent_node_index = -1; //set root node and its parent index as -1 - all nodes will have a positive parent index but root
     // const int root_node_index = pick_root_node_of_tree();
     // const int root_point_index = pick_root_point_of_node();
+    initialize_parent_node_indicies();
     find_neighbors();
     reset_visited_flag();
 
     printf("Tree View\n");
-    print_tree(root_node_index, 0);
+    tree_dfs(root_node_index, 0, -1); //negative 1 for root parent
 
     return 0;
 }
