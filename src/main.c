@@ -1,6 +1,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "math.h"
+#include <stdbool.h>
 
 typedef struct{
     int x_pos;
@@ -11,7 +12,15 @@ typedef struct{
 }point; //defining a struct for points in a node
         // Tree structure using compass points
 
+
+//----------------------------------------------------------------------------------------------
+//
+// I am leaving this untouched for now.
+//
+//-----------------------------------------------------------------------------------------------
 enum Neighbors{UP, DOWN, LEFT, RIGHT, LEFT_UP, LEFT_DOWN, RIGHT_UP, RIGHT_DOWN, TOTAL_NEIGHBORS};
+
+
 
 typedef struct{
     size_t number_of_points;
@@ -25,6 +34,33 @@ typedef struct{
     int node_neighbors[TOTAL_NEIGHBORS];
     int parent_node_index;
 }nodes; //defining a struct for nodes that contains an array of points, with an arbitrary maximum of 5 points per node
+
+
+typedef struct  {
+    nodes north;
+    nodes nothEast;
+    nodes east;
+    nodes southEast;
+    nodes south;
+    nodes southWest;
+    nodes west;
+    nodes northWest;
+    bool isRootNode;
+} Tree;         // The tree structure based on compass points
+
+
+//--------------------------------------------------------------
+//
+// This is a doubly linked list vhat we can used to keep track
+// of nodes we visited. May replace with a hash table depending
+// on what Dr. Raifey recommends.
+// 
+//--------------------------------------------------------------
+typedef struct {
+    nodes previous;
+    nodes bext;
+    float distance_from_prev;
+} visitedNodes;
 
 nodes graph_g[] = { //initializing a tree with 4 nodes that each contain varying number of points
     {.number_of_points = 3, .row_number = 0, .column_number = 0, .node_points = {{2,3}, {6,1}, {5,2}} }, //pass number of points then pass point x/y, weight should default to zero for a global initialized int
