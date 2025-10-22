@@ -4,8 +4,8 @@
 #include <stdbool.h>
 
 typedef struct{
-    int x_pos;
-    int y_pos;
+    double x_pos;
+    double y_pos;
     double weight;
     int visited;
     int is_root_point;
@@ -64,6 +64,7 @@ typedef struct {
 
 */
 
+/*
 Nodes graph_g[] = { //initializing a tree with 4 nodes that each contain varying number of points
     {.number_of_points = 3, .row_number = 0, .column_number = 0, .node_points = {{2,3}, {6,1}, {5,2}} }, //pass number of points then pass point x/y, weight should default to zero for a global initialized int
     {.number_of_points = 2, .row_number = 0, .column_number = 1, .node_points = {{1,1}, {8,5}} },
@@ -75,22 +76,36 @@ Nodes graph_g[] = { //initializing a tree with 4 nodes that each contain varying
     {.number_of_points = 3, .row_number = 2, .column_number = 1, .node_points = {{2,2}, {0,0}, {8,3}} },
     {.number_of_points = 1, .row_number = 2, .column_number = 2, .node_points = {{1,6}} }
 };  
+*/
+
+Nodes graph_g[] = { //initializing a tree with 4 nodes that each contain varying number of points
+    {.number_of_points = 3, .row_number = 1, .column_number = 1, .node_points = {{0.52, 0.61}, {0.34, 0.47}, {0.13, 0.92}} }, //pass number of points then pass point x/y, weight should default to zero for a global initialized int
+    {.number_of_points = 2, .row_number = 1, .column_number = 2, .node_points = {{1.21, 0.72}, {1.65, 0.59}} },
+    {.number_of_points = 0, .row_number = 1, .column_number = 3, .node_points = {} }, //empty node
+    {.number_of_points = 0, .row_number = 2, .column_number = 1, .node_points = {} }, 
+    {.number_of_points = 5, .row_number = 2, .column_number = 2, .node_points = {{1.18, 1.34}, {1.72, 1.47}, {1.96, 1.22}, {1.29, 1.83}, {1.33, 1.01}} },
+    {.number_of_points = 2, .row_number = 2, .column_number = 3, .node_points = {{2.73, 1.22}, {2.99, 1.11}} },
+    {.number_of_points = 2, .row_number = 3, .column_number = 1, .node_points = {{0.91, 2.27}, {0.38, 2.65}} },
+    {.number_of_points = 3, .row_number = 3, .column_number = 2, .node_points = {{1.82, 2.16}, {1.09, 2.70}, {1.68, 2.39}} },
+    {.number_of_points = 1, .row_number = 3, .column_number = 3, .node_points = {{2.51, 2.76}} }
+}; 
 
 /*
 graph_g current structure is like this:
 
+3 x x x
 2 x x x
 1 x x x
-0 x x x
 
 Or where E is an empty node and N has a point
 
-2 N N N
-1 E N N
-0 N N E
+3 N N N
+2 E N N
+1 N N E
+  1 2 3
 */
 
-const unsigned int NUMBER_OF_nodeS_IN_TREE = sizeof(graph_g) / sizeof(graph_g[0]) - 1; 
+const unsigned int NUMBER_OF_NODES_IN_TREE = sizeof(graph_g) / sizeof(graph_g[0]) - 1; 
 unsigned int MAX_ROW_NUMBER;
 unsigned int MAX_COL_NUMBER;
 unsigned int MAX_ROW_INDEX;
@@ -159,10 +174,10 @@ void find_neighbors(){
 
             graph_g[i].node_neighbors[j] = -1; //set to -1 by default
             
-            if((row < 0 || col < 0) || (row > MAX_ROW_INDEX || col > MAX_COL_INDEX)){ //check if row or col are out of bounds
+            if((row < 1 || col < 1) || (row > MAX_ROW_INDEX || col > MAX_COL_INDEX)){ //check if row or col are out of bounds
                 continue;
             }
-            if(neighbor_index < 0 || neighbor_index > NUMBER_OF_nodeS_IN_TREE + 1){ //check if index is out of bounds
+            if(neighbor_index < 0 || neighbor_index > NUMBER_OF_NODES_IN_TREE){ //check if index is out of bounds
                 continue;
             }
 
@@ -185,11 +200,6 @@ void find_neighbors(){
     }
 }
 
-/*
-########################################################
-######### CURRENTLY UNUSED FUNCTIONS ###################
-########################################################
-
 //helper function checks if input node has at least one point
 int check_number_of_points_in_node(int selected_node){
     short number_points_in_node = graph_g[selected_node].number_of_points;
@@ -208,12 +218,12 @@ int pick_root_node_of_tree(){
     short node_exists_in_array = 0;
     short node_not_empty = 0;
 
-    printf("Pick a number greater than or equal to 0 and less than or equal to: %d to pick a node as the root: \n", NUMBER_OF_nodeS_IN_TREE - 1);
+    printf("Pick a number greater than or equal to 0 and less than or equal to: %d to pick a node as the root: \n", NUMBER_OF_NODES_IN_TREE - 1);
     scanf("%d", &input_node);
     while(1){
         node_exists_in_array, node_not_empty = 0; //reset flags to 0 before next check
 
-        if(input_node >= 0 && input_node <= NUMBER_OF_nodeS_IN_TREE - 1){ //check input is in the range of nodes
+        if(input_node >= 0 && input_node <= NUMBER_OF_NODES_IN_TREE - 1){ //check input is in the range of nodes
             node_exists_in_array = 1;
         }
         short check_has_points = check_number_of_points_in_node(input_node); //check input is a non-empty node
@@ -226,7 +236,7 @@ int pick_root_node_of_tree(){
             break;
         }
         else{
-            printf("Invalid input, pick a number >= 0 and <= %d, that is a non-empty node: \n", NUMBER_OF_nodeS_IN_TREE - 1);
+            printf("Invalid input, pick a number >= 0 and <= %d, that is a non-empty node: \n", NUMBER_OF_NODES_IN_TREE - 1);
             scanf("%d", &input_node);
         }
     
@@ -234,6 +244,11 @@ int pick_root_node_of_tree(){
 
     return input_node;
 }
+
+/*
+########################################################
+######### CURRENTLY UNUSED FUNCTIONS ###################
+########################################################
 
 //function to scan a valid root point
 int pick_root_point_of_node(int node_index){
@@ -273,46 +288,9 @@ int get_height_of_tree(){
     return graph_g[last_element_graph_g].row_number;
 }
 
-struct Min_Result{ //define a struct to return values from computation function
-    double euclidean_distance;
-    int node_index;
-    int point_index;
-};
-
-//Fnction takes a pointer to a point in a node and the index of a node in our graph. Finds the minimum euclidean distance (weight) between the 
-//given point and every point of each neighbor of the node. Returns a struct with the smalled euclidean distance, index of the neighbor node and index of the point in the neighbor
-struct Min_Result compute_euclidean_distance_of_adjacent_nodes_for_given_point(Point *current_node_point, int current_node_index){
-
-    double current_minimum_for_point = INFINITY; //set temp var to infinity
-    int node_min_point_belongs, point_in_node = -2;
-
-    for(int i=0; i < TOTAL_NEIGHBORS; i++){ //loop from 0 to neighbors n-1
-
-        int current_neighbor_to_node = graph_g[current_node_index].node_neighbors[i]; //get the node of current neighbor by accessing index in node neighbors
-
-        for(int j=0; j < graph_g[current_neighbor_to_node].number_of_points; j++){ //loop through each point in curent node
-            double distance_to_current_neighbor_point = euclidean_distance(current_node_point->x_pos, current_node_point->y_pos, graph_g[current_neighbor_to_node].node_points[j].x_pos, graph_g[current_neighbor_to_node].node_points[j].y_pos); //distance of current node's point passed in func to current point in current neighbor node
-            
-            if(distance_to_current_neighbor_point < current_minimum_for_point){
-                current_minimum_for_point = distance_to_current_neighbor_point;
-                node_min_point_belongs = i; //store the index of neighbor that minimum point belongs to
-                point_in_node = j; //store index of minimum point
-            }
-        }
-    }
-
-    struct Min_Result min_of_node; //init and set return struct
-    min_of_node.euclidean_distance = current_minimum_for_point;
-    min_of_node.node_index = node_min_point_belongs;
-    min_of_node.point_index = point_in_node;
-
-    return min_of_node;
-
-}
-    
 */
 
-double euclidean_distance(int x1, int y1, int x2, int y2){
+double euclidean_distance(double x1, double y1, double x2, double y2){
     return sqrt(pow((x2 - x1), 2) + pow((y2 - y1), 2));
 }
 
@@ -322,7 +300,7 @@ double compute_edge_weight_between_nodes(int parent, int child){
 
     for(int i=0; i < graph_g[parent].number_of_points; i++){ //loop through all of parents points
         for(int j=0; j < graph_g[child].number_of_points; j++){//for each parent point loop through each child point
-            double computed_euclidean_distance = euclidean_distance(graph_g[parent].node_points[j].x_pos, graph_g[parent].node_points[j].y_pos, graph_g[child].node_points[j].x_pos, graph_g[child].node_points[j].y_pos); //pass in xy of current parent point and xy of current child point
+            double computed_euclidean_distance = euclidean_distance(graph_g[parent].node_points[i].x_pos, graph_g[parent].node_points[i].y_pos, graph_g[child].node_points[j].x_pos, graph_g[child].node_points[j].y_pos); //pass in xy of current parent point and xy of current child point
             if(computed_euclidean_distance < lowest) lowest = computed_euclidean_distance;
         }
     }
@@ -402,22 +380,23 @@ void tree_dfs(int node_index, int depth, int parent_index) {
 }
 
 void reset_visited_flag() {
-  for (int i=0; i <= NUMBER_OF_nodeS_IN_TREE; i++) {
+  for (int i=0; i <= NUMBER_OF_NODES_IN_TREE; i++) {
     graph_g[i].visited = 0;
   }
 }
 
 int main(){
     //max row and col actualy val
-    MAX_ROW_INDEX = graph_g[NUMBER_OF_nodeS_IN_TREE].row_number;
-    MAX_COL_INDEX = graph_g[NUMBER_OF_nodeS_IN_TREE].column_number;
+    MAX_ROW_INDEX = graph_g[NUMBER_OF_NODES_IN_TREE].row_number;
+    MAX_COL_INDEX = graph_g[NUMBER_OF_NODES_IN_TREE].column_number;
     //number of rows and cols
-    MAX_COL_NUMBER  = MAX_COL_INDEX + 1;
-    MAX_ROW_NUMBER = MAX_ROW_INDEX + 1;
-    const int root_node_index = 1;
+    MAX_COL_NUMBER  = MAX_COL_INDEX;
+    MAX_ROW_NUMBER = MAX_ROW_INDEX;
+    //const int root_node_index = 1;
+    //const int root_node_index = 4;
+    const int root_node_index = pick_root_node_of_tree();
     graph_g[root_node_index].is_root_node = 1;
     graph_g[root_node_index].parent_node_index = -1; //set root node and its parent index as -1 - all nodes will have a positive parent index but root
-    // const int root_node_index = pick_root_node_of_tree();
     // const int root_point_index = pick_root_point_of_node();
     initialize_parent_node_indicies();
     find_neighbors();
