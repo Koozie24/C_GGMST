@@ -359,22 +359,21 @@ void tree_dfs(int node_index, int depth, int parent_index) {
   graph_g[node_index].visited = 1;
   graph_g[node_index].parent_node_index = parent_index; //set parent to index of previous node
 
-  /*use indentition based on depth
-  for (int i = 0; i < depth; i++) printf("  ");
-  printf("%d: depth ", depth);
-  printf("└── node [%d,%d] (Index %d, points: %zu)\n",
-    graph_g[node_index].row_number,
-        graph_g[node_index].column_number,
-        node_index,
-    graph_g[node_index].number_of_points);
-   Recursively print each neighbor */
   for (int i = 0; i < TOTAL_NEIGHBORS; i++) {
     int neighbor_index = graph_g[node_index].node_neighbors[i];
 
     if (neighbor_index != -1 && !graph_g[neighbor_index].visited) {
-        map_edges_between_nodes(neighbor_index, node_index); //map edge and set weight from parent (node) to child(parent)
-        printf("Edge: parent %d -> child %d | edge weight = %.3f\n", node_index, neighbor_index, graph_g[node_index].set_of_edges[i].weight);
         tree_dfs(neighbor_index, depth+1, node_index);
+        map_edges_between_nodes(neighbor_index, node_index); //map edge and set weight from parent (node) to child(parent)
+        if(graph_g[neighbor_index].is_leaf){
+            printf("Edge: leaf %d -> parent %d | edge weight = %.3f\n", neighbor_index, node_index, graph_g[node_index].set_of_edges[i].weight);
+        }
+        else if(graph_g[node_index].is_root_node){
+            printf("Edge: child %d -> root %d | edge weight = %.3f\n", neighbor_index, node_index, graph_g[node_index].set_of_edges[i].weight);
+        }
+        else{
+             printf("Edge: child %d -> parent %d | edge weight = %.3f\n", neighbor_index, node_index, graph_g[node_index].set_of_edges[i].weight);
+        }
     }
   }
 }
