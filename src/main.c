@@ -64,20 +64,6 @@ typedef struct {
 
 */
 
-/*
-Nodes graph_g[] = { //initializing a tree with 4 nodes that each contain varying number of points
-    {.number_of_points = 3, .row_number = 0, .column_number = 0, .node_points = {{2,3}, {6,1}, {5,2}} }, //pass number of points then pass point x/y, weight should default to zero for a global initialized int
-    {.number_of_points = 2, .row_number = 0, .column_number = 1, .node_points = {{1,1}, {8,5}} },
-    {.number_of_points = 0, .row_number = 0, .column_number = 2, .node_points = {} }, //empty node
-    {.number_of_points = 0, .row_number = 1, .column_number = 0, .node_points = {} }, 
-    {.number_of_points = 5, .row_number = 1, .column_number = 1, .node_points = {{9,3}, {2,7}, {7,2}, {4,6}, {3,3}} },
-    {.number_of_points = 2, .row_number = 1, .column_number = 2, .node_points = {{5,2}, {4,0}} },
-    {.number_of_points = 2, .row_number = 2, .column_number = 0, .node_points = {{9,4}, {3,5}} },
-    {.number_of_points = 3, .row_number = 2, .column_number = 1, .node_points = {{2,2}, {0,0}, {8,3}} },
-    {.number_of_points = 1, .row_number = 2, .column_number = 2, .node_points = {{1,6}} }
-};  
-*/
-
 Nodes graph_g[] = { //initializing a tree with 4 nodes that each contain varying number of points
     {.number_of_points = 3, .row_number = 1, .column_number = 1, .node_points = {{0.52, 0.61}, {0.34, 0.47}, {0.13, 0.92}} }, //pass number of points then pass point x/y, weight should default to zero for a global initialized int
     {.number_of_points = 2, .row_number = 1, .column_number = 2, .node_points = {{1.21, 0.72}, {1.65, 0.59}} },
@@ -245,51 +231,6 @@ int pick_root_node_of_tree(){
     return input_node;
 }
 
-/*
-########################################################
-######### CURRENTLY UNUSED FUNCTIONS ###################
-########################################################
-
-//function to scan a valid root point
-int pick_root_point_of_node(int node_index){
-    int input_point;
-    int number_of_points = sizeof(graph_g[node_index].node_points) / sizeof(graph_g[node_index].node_points[0]);
-    short point_exists_in_node = 0;
-    
-    printf("Pick a number greater than or equal to 0 and less than or equal to: %d to pick a point as the root: \n", number_of_points - 1);
-    scanf("%d", &input_point);
-
-    while(!point_exists_in_node){
-
-        if(input_point >=0 && input_point <= number_of_points - 1){
-            point_exists_in_node = 1;
-            graph_g[node_index].node_points[input_point].is_root_point = 1; //set root in struct
-        }
-        
-        else{
-            printf("Invalid input, pick a number >= 0 and <= %d, to pick a point as the root point: \n", number_of_points - 1);
-            scanf("%d", &input_point);
-        }
-    }
-    
-    return input_point;
-}
-
-//helper function get the row value of the root of the tree based on given input
-int set_root_row(int root_node_index){
-    return graph_g[root_node_index].row_number;
-}
-
-
-//helper function to get the height of the current tree by taking the row number of the last element in graph_g
-int get_height_of_tree(){
-    int last_element_graph_g = sizeof(graph_g) / sizeof(graph_g[0]) - 1;
-
-    return graph_g[last_element_graph_g].row_number;
-}
-
-*/
-
 double euclidean_distance(double x1, double y1, double x2, double y2){
     return sqrt(pow((x2 - x1), 2) + pow((y2 - y1), 2));
 }
@@ -348,6 +289,20 @@ void map_edges_between_nodes(int child_index, int parent_index){
     }
 }
 
+/*function takes the integer indicies of the parent and child as well as the index of a parent point and then checks each point in the child node, sums the weight and euclidean distance, then checks for the lowest among the points*/
+double compute_point_weight_sum(int parent_index, int child_index, int point_index){
+    double lowest = INFINITY; //initialize lowest to infinity
+    
+    for(int i = 0; i < graph_g[child_index].number_of_points; i++){ //iterate over all the points in the given child node
+        double current_weight = graph_g[child_index].node_points[i].weight + euclidean_distance(graph_g[parent_index].node_points[point_index].x_pos, graph_g[parent_index].node_points[point_index].y_pos, graph_g[child_index].node_points[i].x_pos, graph_g[child_index].node_points[i].y_pos); // sum the weight of the euclidean distance between two current points and the weight of the child
+        
+        if(current_weight < lowest){ //check for new low
+            lowest = current_weight;
+        }
+    }
+
+    return lowest;
+}
 
 void tree_dfs(int node_index, int depth, int parent_index) {
 
@@ -374,6 +329,19 @@ void tree_dfs(int node_index, int depth, int parent_index) {
         else{
              printf("Edge: child %d -> parent %d | edge weight = %.3f\n", neighbor_index, node_index, graph_g[node_index].set_of_edges[i].weight);
         }
+    }
+  }
+
+  if(!graph_g[node_index].is_leaf){ 
+    for (int j = 0; j < graph_g[node_index].number_of_points; j++){
+        double total_weight = 0.0;
+        for(int k = 0; k < TOTAL_NEIGHBORS; k++){ 
+            int child_index = graph_g[node_index].node_neighbors[k];
+            if(child_index != -1 && graph_g[child_index].parent_node_index == node_index){ //check child is a valid index and its parent actually is the parent of our child
+                total_weight += compute_point_weight_sum(node_index, child_index, j);
+            }
+        }
+        graph_g[node_index].node_points[j].weight = total_weight; //set the weight of our point
     }
   }
 }
@@ -403,6 +371,14 @@ int main(){
 
     printf("Tree View\n");
     tree_dfs(root_node_index, 0, -1); //negative 1 for root parent
+
+    double minimum = INFINITY;
+    for (int i = 0; i < graph_g[root_node_index].number_of_points; i++){ //loop through the points of root node
+        if (graph_g[root_node_index].node_points[i].weight < minimum) //find minimum weight 
+        minimum = graph_g[root_node_index].node_points[i].weight; 
+    }
+
+    printf("GGMST total weight = %.3f\n", minimum);
 
     return 0;
 }
