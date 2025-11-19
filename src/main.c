@@ -306,15 +306,40 @@ double compute_point_weight_sum(int parent_index, int child_index, int point_ind
 
 void tree_dfs(int node_index, int depth, int parent_index) {
 
-  if (node_index == -1 || graph_g[node_index].visited) return;
+    if (node_index == -1 || graph_g[node_index].visited) return;
 
-  check_is_leaf_node(node_index);
-  //if(parent_index > -1) map_edges_between_nodes(node_index, parent_index); //map edges and set weights if not root node
+    check_is_leaf_node(node_index);
+    //if(parent_index > -1) map_edges_between_nodes(node_index, parent_index); //map edges and set weights if not root node
 
-  graph_g[node_index].visited = 1;
-  graph_g[node_index].parent_node_index = parent_index; //set parent to index of previous node
+    graph_g[node_index].visited = 1;
+    graph_g[node_index].parent_node_index = parent_index; //set parent to index of previous node
 
-  for (int i = 0; i < TOTAL_NEIGHBORS; i++) {
+    int best_neighbor_to_visit = -2;
+    double current_best_weight = INFINITY;
+
+    for (int i = 0; i < TOTAL_NEIGHBORS; i++) { //iterate through neighbors of current node
+        int neighbor_index = graph_g[node_index].node_neighbors[i];
+        if(neighbor_index != -1 && !graph_g[neighbor_index].visited){ //check neighbor has not been visited and not empty
+            double current_weight = compute_edge_weight_between_nodes(node_index, neighbor_index); //computes weight of edge between current node and current neighbor
+            if(current_weight < current_best_weight) best_neighbor_to_visit = neighbor_index; //store index of current best neighbor node
+        }
+    
+    if(best_neighbor_to_visit != -1 && !graph_g[best_neighbor_to_visit].visited){ //check neighbor is not empty or visitied
+        tree_dfs(neighbor_index, depth+1, node_index);
+        map_edges_between_nodes(neighbor_index, node_index); //map edge and set weight from parent (node) to child(parent)
+        if(graph_g[neighbor_index].is_leaf){
+            printf("Edge: leaf %d -> parent %d | edge weight = %.3f\n", neighbor_index, node_index, graph_g[node_index].set_of_edges[i].weight);
+        }
+        else if(graph_g[node_index].is_root_node){
+            printf("Edge: child %d -> root %d | edge weight = %.3f\n", neighbor_index, node_index, graph_g[node_index].set_of_edges[i].weight);
+        }
+        else{
+                printf("Edge: child %d -> parent %d | edge weight = %.3f\n", neighbor_index, node_index, graph_g[node_index].set_of_edges[i].weight);
+        }
+    }
+    }
+    /*
+    for (int i = 0; i < TOTAL_NEIGHBORS; i++) {
     int neighbor_index = graph_g[node_index].node_neighbors[i];
 
     if (neighbor_index != -1 && !graph_g[neighbor_index].visited) {
@@ -327,23 +352,23 @@ void tree_dfs(int node_index, int depth, int parent_index) {
             printf("Edge: child %d -> root %d | edge weight = %.3f\n", neighbor_index, node_index, graph_g[node_index].set_of_edges[i].weight);
         }
         else{
-             printf("Edge: child %d -> parent %d | edge weight = %.3f\n", neighbor_index, node_index, graph_g[node_index].set_of_edges[i].weight);
+                printf("Edge: child %d -> parent %d | edge weight = %.3f\n", neighbor_index, node_index, graph_g[node_index].set_of_edges[i].weight);
         }
     }
-  }
+    }*/
 
-  if(!graph_g[node_index].is_leaf){ 
-    for (int j = 0; j < graph_g[node_index].number_of_points; j++){
-        double total_weight = 0.0;
-        for(int k = 0; k < TOTAL_NEIGHBORS; k++){ 
-            int child_index = graph_g[node_index].node_neighbors[k];
-            if(child_index != -1 && graph_g[child_index].parent_node_index == node_index){ //check child is a valid index and its parent actually is the parent of our child
-                total_weight += compute_point_weight_sum(node_index, child_index, j);
+    if(!graph_g[node_index].is_leaf){ 
+        for (int j = 0; j < graph_g[node_index].number_of_points; j++){
+            double total_weight = 0.0;
+            for(int k = 0; k < TOTAL_NEIGHBORS; k++){ 
+                int child_index = graph_g[node_index].node_neighbors[k];
+                if(child_index != -1 && graph_g[child_index].parent_node_index == node_index){ //check child is a valid index and its parent actually is the parent of our child
+                    total_weight += compute_point_weight_sum(node_index, child_index, j);
+                }
             }
+            graph_g[node_index].node_points[j].weight = total_weight; //set the weight of our point
         }
-        graph_g[node_index].node_points[j].weight = total_weight; //set the weight of our point
     }
-  }
 }
 
 void reset_visited_flag() {
