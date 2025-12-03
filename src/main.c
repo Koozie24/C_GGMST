@@ -2,6 +2,7 @@
 #include "stdlib.h"
 #include "math.h"
 #include "float.h"
+#include "sys/time.h"
 
 typedef struct{
     double x_pos;
@@ -425,6 +426,7 @@ void initialzie_edges(){
     }
 }
 
+/*Function uses DFS to print a branched view of the tree using prims. Assumes run of prims_ggmst first.*/
 void print_tree(int current_node, int depth){
     if(current_node < 0) return;
 
@@ -443,6 +445,34 @@ void print_tree(int current_node, int depth){
     }
 }
 
+/*function takes and assumes populated edges by running prims_ggmst first. Uses dynammic programming approach to traverse tree from computes the minimum weight cost betwen points in all of the child nodes*/
+void compute_prim_tree_weight(int current_node){
+    if(current_node < 0) return;
+
+    int store_children[TOTAL_NEIGHBORS]; //array to store children of current node
+    int count_of_children = 0;
+
+    for (int i=0; i<TOTAL_NEIGHBORS; i++){ //loop through edges
+        int current_child_index = graph_g[current_node].set_of_edges[i].child_index;
+        if(current_child_index >= 0){ //check is valid index
+            store_children[count_of_children] = current_child_index;//store child and recurse
+            count_of_children++;
+            compute_prim_tree_weight(current_child_index);
+        }
+    }
+
+    for(int j=0; j<graph_g[current_node].number_of_points; j++){ //iterate over points in node
+        double total_weight = 0.0; 
+        for(int k = 0; k < count_of_children; k++){  //iterate over the stored children 
+            int child_index = store_children[k];
+            total_weight += compute_point_weight_sum(current_node, child_index, j); //compute min distance between points 
+            
+        }
+        graph_g[current_node].node_points[j].weight = total_weight; //set the weight of our point
+    }
+}
+
+/*Function prompts user to pick which algorithm to run*/
 int pick_prims_or_dfs(){
     int algorithm_select;
     while(1){
@@ -457,6 +487,8 @@ int pick_prims_or_dfs(){
 
 }
 int main(){
+    struct timeval stop, start;
+    gettimeofday(&start, NULL);
     //max row and col actualy val
     MAX_ROW_INDEX = graph_g[NUMBER_OF_NODES_IN_TREE].row_number;
     MAX_COL_INDEX = graph_g[NUMBER_OF_NODES_IN_TREE].column_number;
@@ -468,6 +500,7 @@ int main(){
     graph_g[root_node_index].is_root_node = 1;
     graph_g[root_node_index].parent_node_index = -1; //set root node and its parent index as -1 - all nodes will have a positive parent index but root
 
+    //setup datastructures 
     initialize_parent_node_indicies();
     find_neighbors();
     reset_visited_flag();
@@ -475,19 +508,23 @@ int main(){
 
     int selection = pick_prims_or_dfs();
 
+    //gettimeofday(&start, NULL);
+
+    //select prims or dfs algorithm
     switch(selection){
         case(1):
             int n_nodes = get_count_non_empty_nodes_in_graph();
             prims_ggmst(root_node_index, n_nodes);
             printf("View of the tree with Prims: \n");
             print_tree(root_node_index, 0);
+            compute_prim_tree_weight(root_node_index);
             break;
         case(2):
             printf("Tree View\n");
             tree_dfs(root_node_index, 0, -1); //negative 1 for root parent
             break;
     }
-
+    gettimeofday(&stop, NULL);
     
     double minimum = INFINITY;
     for (int i = 0; i < graph_g[root_node_index].number_of_points; i++){ //loop through the points of root node
@@ -497,5 +534,6 @@ int main(){
 
     printf("GGMST total weight = %.3f\n", minimum);
 
+    printf("Time to run in microseconds: %lu \n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_sec - start.tv_sec);
     return 0;
 }
