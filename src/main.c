@@ -1,7 +1,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "math.h"
-#include <stdbool.h>
+#include "float.h"
 
 typedef struct{
     double x_pos;
@@ -32,39 +32,7 @@ typedef struct{
     Edges set_of_edges[8];
 }Nodes; //defining a struct for Nodes that contains an array of points, with an arbitrary maximum of 5 points per node
 
- /*
-########################################################
-######### CURRENTLY UNUSED STRUCTS ###################
-########################################################
-typedef struct  {
-    Nodes north;
-    Nodes nothEast;
-    Nodes east;
-    Nodes southEast;
-    Nodes south;
-    Nodes southWest;
-    Nodes west;
-    Nodes northWest;
-    bool isRootNode;
-} Tree;         // The tree structure based on compass points
-
-
-//--------------------------------------------------------------
-//
-// This is a doubly linked list vhat we can used to keep track
-// of Nodes we visited. May replace with a hash table depending
-// on what Dr. Raifey recommends.
-// 
-//--------------------------------------------------------------
-typedef struct {
-    Nodes previous;
-    Nodes bext;
-    float distance_from_prev;
-} visitedNodes;
-
-*/
-
-Nodes graph_g[] = { //initializing a tree with 4 nodes that each contain varying number of points
+Nodes graph_g[] = { //initializing a tree with 9 nodes that each contain varying number of points
     {.number_of_points = 3, .row_number = 1, .column_number = 1, .node_points = {{0.52, 0.61}, {0.34, 0.47}, {0.13, 0.92}} }, //pass number of points then pass point x/y, weight should default to zero for a global initialized int
     {.number_of_points = 2, .row_number = 1, .column_number = 2, .node_points = {{1.21, 0.72}, {1.65, 0.59}} },
     {.number_of_points = 0, .row_number = 1, .column_number = 3, .node_points = {} }, //empty node
@@ -175,6 +143,7 @@ void find_neighbors(){
         }
     }
 
+    /*
     for(int j = 0; j < sizeof(graph_g) / sizeof(graph_g[0]); j++){
         printf("graph_g[%d]: ", j);
         for(int i = 0; i < TOTAL_NEIGHBORS; i++){
@@ -183,7 +152,7 @@ void find_neighbors(){
             }
         }   //PRINTS EXPECTED RESULT FOR all j
         printf("\n\n");
-    }
+    } */
 }
 
 //helper function checks if input node has at least one point
@@ -237,7 +206,7 @@ double euclidean_distance(double x1, double y1, double x2, double y2){
 
 /*function takes an index of a parent and child node.  iterates over each point in both nodes and computes euclidean distance. Returns a double of the smallest value*/
 double compute_edge_weight_between_nodes(int parent, int child){
-    double lowest = INFINITY; //init lowest value to infiinity
+    double lowest = DBL_MAX; //init lowest value to infiinity
 
     for(int i=0; i < graph_g[parent].number_of_points; i++){ //loop through all of parents points
         for(int j=0; j < graph_g[child].number_of_points; j++){//for each parent point loop through each child point
@@ -284,14 +253,13 @@ void map_edges_between_nodes(int child_index, int parent_index){
         if(graph_g[parent_index].node_neighbors[k] == child_index){
             graph_g[parent_index].set_of_edges[k].child_index = child_index; //define the edge between parent and child
             graph_g[parent_index].set_of_edges[k].weight = current_edge_weight; //set the weight of the edge
-            return;
         }
     }
 }
 
 /*function takes the integer indicies of the parent and child as well as the index of a parent point and then checks each point in the child node, sums the weight and euclidean distance, then checks for the lowest among the points*/
 double compute_point_weight_sum(int parent_index, int child_index, int point_index){
-    double lowest = INFINITY; //initialize lowest to infinity
+    double lowest = DBL_MAX; //initialize lowest to infinity
     
     for(int i = 0; i < graph_g[child_index].number_of_points; i++){ //iterate over all the points in the given child node
         double current_weight = graph_g[child_index].node_points[i].weight + euclidean_distance(graph_g[parent_index].node_points[point_index].x_pos, graph_g[parent_index].node_points[point_index].y_pos, graph_g[child_index].node_points[i].x_pos, graph_g[child_index].node_points[i].y_pos); // sum the weight of the euclidean distance between two current points and the weight of the child
@@ -338,24 +306,6 @@ void tree_dfs(int node_index, int depth, int parent_index) {
         }
     }
     }
-    /*
-    for (int i = 0; i < TOTAL_NEIGHBORS; i++) {
-    int neighbor_index = graph_g[node_index].node_neighbors[i];
-
-    if (neighbor_index != -1 && !graph_g[neighbor_index].visited) {
-        tree_dfs(neighbor_index, depth+1, node_index);
-        map_edges_between_nodes(neighbor_index, node_index); //map edge and set weight from parent (node) to child(parent)
-        if(graph_g[neighbor_index].is_leaf){
-            printf("Edge: leaf %d -> parent %d | edge weight = %.3f\n", neighbor_index, node_index, graph_g[node_index].set_of_edges[i].weight);
-        }
-        else if(graph_g[node_index].is_root_node){
-            printf("Edge: child %d -> root %d | edge weight = %.3f\n", neighbor_index, node_index, graph_g[node_index].set_of_edges[i].weight);
-        }
-        else{
-                printf("Edge: child %d -> parent %d | edge weight = %.3f\n", neighbor_index, node_index, graph_g[node_index].set_of_edges[i].weight);
-        }
-    }
-    }*/
 
     if(!graph_g[node_index].is_leaf){ 
         for (int j = 0; j < graph_g[node_index].number_of_points; j++){
@@ -371,12 +321,141 @@ void tree_dfs(int node_index, int depth, int parent_index) {
     }
 }
 
+int get_count_non_empty_nodes_in_graph(){
+    int node_count = 0;
+
+    for(int i=0; i< (sizeof(graph_g) / sizeof(graph_g[0])); i++ ){
+        if(graph_g[i].number_of_points > 0) node_count++;
+    }
+
+    return node_count;
+}
+
+int count_remaining_nodes(){
+    int node_count = 0;
+    for (int i=0; i < (sizeof(graph_g) / sizeof(graph_g[0])); i++){
+        if(!graph_g[i].visited && graph_g[i].node_points > 0) node_count++;
+    }
+    return node_count;
+}
+
+void map_edges_prims(int parent, int child, double weight){
+    graph_g[child].parent_node_index = parent;
+    graph_g[child].visited = 1;
+    for (int k=0; k < TOTAL_NEIGHBORS; k++){
+        if(graph_g[parent].node_neighbors[k] == child){
+            graph_g[parent].set_of_edges[k].child_index = child; //define the edge between parent and child
+            graph_g[parent].set_of_edges[k].weight = weight; //set the weight of the edge
+        }
+    }
+}
+
+void prims_ggmst(int root_node, int non_empty_node_count){
+    int nodes_visited = 1;
+
+    graph_g[root_node].visited = 1;
+    //array to store nodes | adding root and update index position tracking
+    int ggmst[non_empty_node_count]; 
+    ggmst[0] = root_node;
+    int index_position_in_array = 1;
+
+    while(nodes_visited < non_empty_node_count){
+        double minimum_edge_weight = DBL_MAX;
+        int minimum_neigbor_index = -2;
+        //int current_node_pt, current_neighbor_pt;
+        int current_parent_node = -2;
+
+        for(int i=0; i < index_position_in_array; i++){ //iterate over nodes in mst
+            int parent = ggmst[i];
+            if(graph_g[parent].number_of_points == 0) continue; //skip if for some reason no points in parent
+
+            for(int j=0; j < TOTAL_NEIGHBORS; j++){ //iterate over neighbors of current node in mst
+                int current_neighbor = graph_g[parent].node_neighbors[j];
+
+                if(current_neighbor < 0) continue; //skip to next iteration if OOB index
+
+                if(!graph_g[current_neighbor].visited && graph_g[current_neighbor].number_of_points > 0){ // check they have valid neighbors
+
+                    for(int pt_c=0; pt_c < graph_g[parent].number_of_points; pt_c++){ //iterate throguh points in current node
+
+                        for(int k=0; k<graph_g[current_neighbor].number_of_points; k++){ //iterate through points in current eligible neighbor
+                            double weight_of_edge = euclidean_distance(graph_g[parent].node_points[pt_c].x_pos, graph_g[parent].node_points[pt_c].y_pos, graph_g[current_neighbor].node_points[k].x_pos, graph_g[current_neighbor].node_points[k].y_pos); //get weight
+
+                            if(weight_of_edge < minimum_edge_weight){
+                                minimum_edge_weight = weight_of_edge;
+                                //current_node_pt = pt_c;
+                               // current_neighbor_pt = k;
+                                minimum_neigbor_index = current_neighbor;
+                                current_parent_node = parent;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        //if no edges found
+        if(current_parent_node < 0 || minimum_neigbor_index < 0){
+            printf("No valid edge was found: visited %d | of %d possible", nodes_visited, non_empty_node_count);
+            break;
+        }
+       
+        //store the node and map the edge
+        ggmst[index_position_in_array] = minimum_neigbor_index;
+        index_position_in_array++;
+
+        map_edges_prims(current_parent_node, minimum_neigbor_index, minimum_edge_weight);
+        nodes_visited++;
+    }
+}
+
 void reset_visited_flag() {
   for (int i=0; i <= NUMBER_OF_NODES_IN_TREE; i++) {
     graph_g[i].visited = 0;
   }
 }
 
+/*Function explicitly sets indices to -2 and weights to 0*/
+void initialzie_edges(){
+    for(int i=0; i < (sizeof(graph_g) / sizeof(graph_g[0])); i++){
+        for (int j=0; j < TOTAL_NEIGHBORS; j++){
+            graph_g[i].set_of_edges[j].child_index = -2;
+            graph_g[i].set_of_edges[j].weight = 0.0;
+        }
+    }
+}
+
+void print_tree(int current_node, int depth){
+    if(current_node < 0) return;
+
+    for(int j=0; j < depth; j++){
+        if(j == depth -1) printf("-  ");
+        else printf("   ");
+    }
+
+    printf("%d\n", current_node);
+
+    for(int i=0; i < TOTAL_NEIGHBORS; i++){
+        int child_index = graph_g[current_node].set_of_edges[i].child_index;
+        if(child_index != -2){
+            print_tree(child_index, depth+1);
+        }
+    }
+}
+
+int pick_prims_or_dfs(){
+    int algorithm_select;
+    while(1){
+        algorithm_select = -1;
+        printf("Please choose Prims (1) or DFS(2): \n");
+        scanf("%d", &algorithm_select);
+
+        if(algorithm_select == 1 || algorithm_select == 2) break;
+    }
+
+    return algorithm_select;
+
+}
 int main(){
     //max row and col actualy val
     MAX_ROW_INDEX = graph_g[NUMBER_OF_NODES_IN_TREE].row_number;
@@ -384,19 +463,32 @@ int main(){
     //number of rows and cols
     MAX_COL_NUMBER  = MAX_COL_INDEX;
     MAX_ROW_NUMBER = MAX_ROW_INDEX;
-    //const int root_node_index = 1;
-    //const int root_node_index = 4;
+
     const int root_node_index = pick_root_node_of_tree();
     graph_g[root_node_index].is_root_node = 1;
     graph_g[root_node_index].parent_node_index = -1; //set root node and its parent index as -1 - all nodes will have a positive parent index but root
-    // const int root_point_index = pick_root_point_of_node();
+
     initialize_parent_node_indicies();
     find_neighbors();
     reset_visited_flag();
+    initialzie_edges();
 
-    printf("Tree View\n");
-    tree_dfs(root_node_index, 0, -1); //negative 1 for root parent
+    int selection = pick_prims_or_dfs();
 
+    switch(selection){
+        case(1):
+            int n_nodes = get_count_non_empty_nodes_in_graph();
+            prims_ggmst(root_node_index, n_nodes);
+            printf("View of the tree with Prims: \n");
+            print_tree(root_node_index, 0);
+            break;
+        case(2):
+            printf("Tree View\n");
+            tree_dfs(root_node_index, 0, -1); //negative 1 for root parent
+            break;
+    }
+
+    
     double minimum = INFINITY;
     for (int i = 0; i < graph_g[root_node_index].number_of_points; i++){ //loop through the points of root node
         if (graph_g[root_node_index].node_points[i].weight < minimum) //find minimum weight 
