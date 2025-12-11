@@ -1,37 +1,7 @@
 #include "stdio.h"
-#include "stdlib.h"
 #include "math.h"
 #include "float.h"
-#include "sys/time.h"
-
-typedef struct{
-    double x_pos;
-    double y_pos;
-    double weight;
-    int visited;
-    int is_root_point;
-}Point; //defining a struct for points in a node
-
-enum Neighbors{UP, DOWN, LEFT, RIGHT, LEFT_UP, LEFT_DOWN, RIGHT_UP, RIGHT_DOWN, TOTAL_NEIGHBORS};
-
-typedef struct{
-    int child_index; //index of child on edge or -1 if none
-    double weight; //weight of the edge
-}Edges;
-
-typedef struct{
-    size_t number_of_points;
-    int row_number;
-    int column_number;
-    int is_root_node;
-    double node_min_weight;
-    Point node_points[5];
-    int visited;
-    int is_leaf;
-    int node_neighbors[TOTAL_NEIGHBORS];
-    int parent_node_index;
-    Edges set_of_edges[8];
-}Nodes; //defining a struct for Nodes that contains an array of points, with an arbitrary maximum of 5 points per node
+#include "../lib/structures.h"
 
 Nodes graph_g[] = { //initializing a tree with 9 nodes that each contain varying number of points
     {.number_of_points = 3, .row_number = 1, .column_number = 1, .node_points = {{0.52, 0.61}, {0.34, 0.47}, {0.13, 0.92}} }, //pass number of points then pass point x/y, weight should default to zero for a global initialized int
@@ -486,9 +456,8 @@ int pick_prims_or_dfs(){
     return algorithm_select;
 
 }
+
 int main(){
-    struct timeval stop, start;
-    gettimeofday(&start, NULL);
     //max row and col actualy val
     MAX_ROW_INDEX = graph_g[NUMBER_OF_NODES_IN_TREE].row_number;
     MAX_COL_INDEX = graph_g[NUMBER_OF_NODES_IN_TREE].column_number;
@@ -508,8 +477,6 @@ int main(){
 
     int selection = pick_prims_or_dfs();
 
-    //gettimeofday(&start, NULL);
-
     //select prims or dfs algorithm
     switch(selection){
         case(1):
@@ -524,7 +491,6 @@ int main(){
             tree_dfs(root_node_index, 0, -1); //negative 1 for root parent
             break;
     }
-    gettimeofday(&stop, NULL);
     
     double minimum = INFINITY;
     for (int i = 0; i < graph_g[root_node_index].number_of_points; i++){ //loop through the points of root node
@@ -533,7 +499,5 @@ int main(){
     }
 
     printf("GGMST total weight = %.3f\n", minimum);
-
-    printf("Time to run in microseconds: %lu \n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_sec - start.tv_sec);
     return 0;
 }
