@@ -4,16 +4,40 @@
 #include "../lib/structures.h"
 
 Nodes graph_g[] = { //initializing a tree with 9 nodes that each contain varying number of points
-    {.number_of_points = 3, .row_number = 1, .column_number = 1, .node_points = {{0.52, 0.61}, {0.34, 0.47}, {0.13, 0.92}} }, //pass number of points then pass point x/y, weight should default to zero for a global initialized int
-    {.number_of_points = 2, .row_number = 1, .column_number = 2, .node_points = {{1.21, 0.72}, {1.65, 0.59}} },
-    {.number_of_points = 0, .row_number = 1, .column_number = 3, .node_points = {} }, //empty node
-    {.number_of_points = 0, .row_number = 2, .column_number = 1, .node_points = {} }, 
-    {.number_of_points = 5, .row_number = 2, .column_number = 2, .node_points = {{1.18, 1.34}, {1.72, 1.47}, {1.96, 1.22}, {1.29, 1.83}, {1.33, 1.01}} },
-    {.number_of_points = 2, .row_number = 2, .column_number = 3, .node_points = {{2.73, 1.22}, {2.99, 1.11}} },
-    {.number_of_points = 2, .row_number = 3, .column_number = 1, .node_points = {{0.91, 2.27}, {0.38, 2.65}} },
-    {.number_of_points = 3, .row_number = 3, .column_number = 2, .node_points = {{1.82, 2.16}, {1.09, 2.70}, {1.68, 2.39}} },
-    {.number_of_points = 1, .row_number = 3, .column_number = 3, .node_points = {{2.51, 2.76}} }
+  /*0*/ {.number_of_points = 3, .row_number = 1, .column_number = 1, .node_points = {{0.52, 0.61}, {0.34, 0.47}, {0.13, 0.92}} }, //pass number of points then pass point x/y, weight should default to zero for a global initialized int
+  /*1*/  {.number_of_points = 2, .row_number = 1, .column_number = 2, .node_points = {{1.21, 0.72}, {1.65, 0.59}} },
+  /*2*/  {.number_of_points = 0, .row_number = 1, .column_number = 3, .node_points = {} }, //empty node
+  /*3*/  {.number_of_points = 0, .row_number = 2, .column_number = 1, .node_points = {} }, 
+  /*4*/   {.number_of_points = 5, .row_number = 2, .column_number = 2, .node_points = {{1.18, 1.34}, {1.72, 1.47}, {1.96, 1.22}, {1.29, 1.83}, {1.33, 1.01}} },
+  /*5*/   {.number_of_points = 2, .row_number = 2, .column_number = 3, .node_points = {{2.73, 1.22}, {2.99, 1.11}} },
+  /*6*/   {.number_of_points = 2, .row_number = 3, .column_number = 1, .node_points = {{0.91, 2.27}, {0.38, 2.65}} },
+  /*7*/   {.number_of_points = 3, .row_number = 3, .column_number = 2, .node_points = {{1.82, 2.16}, {1.09, 2.70}, {1.68, 2.39}} },
+  /*8*/   {.number_of_points = 1, .row_number = 3, .column_number = 3, .node_points = {{2.51, 2.76}} },
+
+       //added rows to test
+   /*9*/   { .number_of_points = 4, .row_number = 4, .column_number = 1, .node_points = {{0.47, 3.12}, {0.88, 3.45}, {0.61, 3.78}, {0.29, 3.33}}}, 
+   /*10*/  { .number_of_points = 2, .row_number = 4, .column_number = 2, .node_points = {{1.42, 3.27}, {1.91, 3.58}}},
+   /*11*/  { .number_of_points = 0, .row_number = 4, .column_number = 3, .node_points = {}},
+   /*12*/  { .number_of_points = 3, .row_number = 5, .column_number = 1, .node_points = {{0.75, 4.12}, {0.33, 4.44}, {0.58, 4.89}}},
+   /*13*/  { .number_of_points = 5, .row_number = 5, .column_number = 2, .node_points = {{1.33, 4.01}, {1.72, 4.47}, {1.95, 4.22}, {1.11, 4.63}, {1.58, 4.85}}},
+   /*14*/  { .number_of_points = 1, .row_number = 5, .column_number = 3, .node_points = {{2.44, 4.66}}},
+   /*15*/  { .number_of_points = 2, .row_number = 6, .column_number = 1, .node_points = {{0.52, 5.18}, {0.90, 5.43}}},
+   /*16*/  { .number_of_points = 4, .row_number = 6, .column_number = 2, .node_points = {{1.74, 5.12}, {1.28, 5.66}, {1.93, 5.48}, {1.06, 5.31}}},
+   /*17*/  { .number_of_points = 0, .row_number = 6, .column_number = 3, .node_points = {}},
+   /*18*/  { .number_of_points = 3, .row_number = 7, .column_number = 1, .node_points = {{0.48, 6.22}, {0.91, 6.57}, {0.63, 6.39}}},
+   /*19*/  { .number_of_points = 1, .row_number = 7, .column_number = 2, .node_points = {{1.44, 6.88}}},
+   /*20*/  { .number_of_points = 0, .row_number = 7, .column_number = 3, .node_points = {}},
+   /*21*/  { .number_of_points = 5, .row_number = 8, .column_number = 1, .node_points = {{0.77, 7.14}, {0.29, 7.59}, {0.58, 7.92}, {0.91, 7.41}, {0.45, 7.73}}},
+   /*22*/  { .number_of_points = 2, .row_number = 8, .column_number = 2, .node_points = {{1.37, 7.18}, {1.89, 7.52}}},
+   /*23*/  { .number_of_points = 3, .row_number = 8, .column_number = 3, .node_points = {{2.63, 7.11}, {2.42, 7.44}, {2.88, 7.69}}},
+   /*24*/  { .number_of_points = 0, .row_number = 9, .column_number = 1, .node_points = {}},
+   /*25*/  { .number_of_points = 4, .row_number = 9, .column_number = 2, .node_points = {{1.15, 8.32}, {1.92, 8.66}, {1.47, 8.18}, {1.74, 8.53}}},
+   /*26*/  { .number_of_points = 1, .row_number = 9, .column_number = 3, .node_points = {{2.55, 8.71}}},
+   /*27*/  { .number_of_points = 2, .row_number = 10, .column_number = 1, .node_points = {{0.66, 9.41}, {0.29, 9.73}}},
+   /*28*/  { .number_of_points = 5, .row_number = 10, .column_number = 2, .node_points = {{1.33, 9.26}, {1.74, 9.89}, {1.18, 9.52}, {1.57, 9.37}, {1.96, 9.71}}},
+   /*29*/  { .number_of_points = 3, .row_number = 10, .column_number = 3, .node_points = {{2.72, 9.44}, {2.39, 9.12}, {2.88, 9.78}}} 
 }; 
+
 
 /*
 graph_g current structure is like this:
